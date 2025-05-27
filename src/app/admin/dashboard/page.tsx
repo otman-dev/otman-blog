@@ -863,7 +863,7 @@ const sidebarItems = [
                                   <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                                     <span>By {post.author}</span>
                                     <span>•</span>
-                                    <span>{(post as any).tags?.length || 0} categories</span>
+                                    <span>{post.tags?.length || 0} categories</span>
                                   </div>
                                 </div>
                               </div>
