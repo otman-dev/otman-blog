@@ -1,5 +1,5 @@
 import { MongoClient, Db, Collection } from 'mongodb';
-import { Post, Category, User, EmailSubscription } from './types';
+import { Post, Category, Tag, User, EmailSubscription } from './types';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 const DB_NAME = process.env.DATABASE_NAME || 'enterprise_blog';
@@ -41,6 +41,11 @@ export async function getCategoriesCollection(): Promise<Collection<Category>> {
   return db.collection<Category>('categories');
 }
 
+export async function getTagsCollection(): Promise<Collection<Tag>> {
+  const { db } = await connectToDatabase();
+  return db.collection<Tag>('tags');
+}
+
 export async function getUsersCollection(): Promise<Collection<User>> {
   const { db } = await connectToDatabase();
   return db.collection<User>('users');
@@ -58,6 +63,7 @@ export async function initializeDatabase() {
     // Create indexes for better performance
     const postsCollection = await getPostsCollection();
     const categoriesCollection = await getCategoriesCollection();
+    const tagsCollection = await getTagsCollection();
     const usersCollection = await getUsersCollection();
     const emailSubscriptionsCollection = await getEmailSubscriptionsCollection();
 
@@ -65,8 +71,11 @@ export async function initializeDatabase() {
       postsCollection.createIndex({ slug: 1 }, { unique: true }),
       postsCollection.createIndex({ published: 1 }),
       postsCollection.createIndex({ category: 1 }),
+      postsCollection.createIndex({ categories: 1 }),
+      postsCollection.createIndex({ tags: 1 }),
       postsCollection.createIndex({ createdAt: -1 }),
       categoriesCollection.createIndex({ slug: 1 }, { unique: true }),
+      tagsCollection.createIndex({ slug: 1 }, { unique: true }),
       usersCollection.createIndex({ username: 1 }, { unique: true }),
       usersCollection.createIndex({ email: 1 }, { unique: true }),
       emailSubscriptionsCollection.createIndex({ email: 1 }, { unique: true }),

@@ -7,15 +7,20 @@ export interface Post {
   excerpt: string;
   author: string;
   category: string;
-  tags: string[];
+  categories: string[]; // Primary categorization
+  tags: string[]; // Additional keywords/labels
   published: boolean;
   featured: boolean;
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  readingTime?: number;
 }
 
+// Category interface - used for organizing posts
 export interface Category {
   _id?: string;
   id: string;
@@ -24,6 +29,19 @@ export interface Category {
   description: string;
   color: string;
   createdAt: string;
+  postCount?: number; // Added for UI display
+}
+
+// Tag interface - used for keywords and labels
+export interface Tag {
+  _id?: string;
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string;
+  createdAt: string;
+  postCount?: number; // Added for UI display
 }
 
 export interface User {

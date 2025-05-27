@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Calendar, User, Clock, ArrowLeft, Tag, Share2, Home, Eye, Bookmark, ThumbsUp, MessageCircle, Sparkles } from 'lucide-react';
+import { Calendar, User, Clock, ArrowLeft, FolderOpen, Share2, Home, Eye, Bookmark, ThumbsUp, MessageCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -13,7 +13,7 @@ interface BlogPost {
   author: string;
   publishedAt: string;
   slug: string;
-  tags: string[];
+  categories: string[];
   readingTime: number;
 }
 
@@ -28,13 +28,16 @@ export default function BlogPostPage() {
       fetchPost(params.slug as string);
     }
   }, [params.slug]);
-
   const fetchPost = async (slug: string) => {
     try {
       const response = await fetch(`/api/blog/posts/by-slug/${slug}`);
       if (response.ok) {
         const data = await response.json();
-        setPost(data);
+        // Transform tags to categories for display
+        setPost({
+          ...data,
+          categories: data.tags || []
+        });
       } else if (response.status === 404) {
         setError('Post not found');
       } else {
@@ -212,18 +215,16 @@ export default function BlogPostPage() {
                   <span className="hidden sm:inline">Save</span>
                 </button>
               </div>
-            </div>
-
-            {/* Tags */}
-            {post.tags.length > 0 && (
+            </div>            {/* Categories */}
+            {post.categories.length > 0 && (
               <div className="flex flex-wrap gap-3">
-                {post.tags.map((tag) => (
+                {post.categories.map((category) => (
                   <span
-                    key={tag}
+                    key={category}
                     className="inline-flex items-center px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 rounded-xl border border-blue-500/30 backdrop-blur-xl hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200"
                   >
-                    <Tag className="w-3 h-3 mr-2" />
-                    {tag}
+                    <FolderOpen className="w-3 h-3 mr-2" />
+                    {category}
                   </span>
                 ))}
               </div>

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Category, Tag } from '@/lib/types';
 import { 
   PlusCircle, 
   Edit, 
@@ -20,9 +21,10 @@ import {
   Search,
   Bell,
   Filter,
-  User,
-  Mail,
-  RefreshCw
+  User,  Mail,
+  RefreshCw,
+  Tag as CategoryIcon,
+  Tag as TagIcon
 } from 'lucide-react';
 
 interface User {
@@ -38,6 +40,7 @@ interface BlogPost {
   excerpt: string;
   author: string;
   publishedAt: Date;
+  categories: string[];
   tags: string[];
   published: boolean;
 }
@@ -57,15 +60,30 @@ interface SubscriptionData {
   recent: EmailSubscription[];
 }
 
-export default function AdminDashboard() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function AdminDashboard() {  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionData>({ total: 0, recent: [] });
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');
-  const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState('posts');const [user, setUser] = useState<User | null>(null);  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);  const [addCategoryName, setAddCategoryName] = useState('');
+  const [addCategoryDescription, setAddCategoryDescription] = useState('');
+  
+  // Tags state management
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagDescription, setNewTagDescription] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#3B82F6');
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [addTagName, setAddTagName] = useState('');
+  const [addTagDescription, setAddTagDescription] = useState('');
+  
   const router = useRouter();
 
   const checkAuth = useCallback(async () => {
@@ -91,12 +109,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
+  }, [checkAuth]);  useEffect(() => {
     if (user) {
       fetchPosts();
       fetchSubscriptions();
+      fetchCategories();
+      fetchTags();
     }
   }, [user]);
   const fetchPosts = async () => {
@@ -142,12 +160,64 @@ export default function AdminDashboard() {
       console.error('Failed to fetch subscriptions:', error);
       setSubscriptions({ total: 0, recent: [] });
     }
+  };  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/blog/categories');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const categoriesData = await response.json();
+      
+      // The API now returns category objects with all necessary fields
+      const categoryObjects = categoriesData.map((category: any) => ({
+        id: category._id || `category-${category.name}`,
+        name: category.name,
+        slug: category.slug || category.name.toLowerCase().replace(/\s+/g, '-'),
+        description: category.description || `Category for ${category.name}`,
+        color: category.color || '#3B82F6',
+        createdAt: category.createdAt || new Date().toISOString(),
+        postCount: category.postCount || 0
+      }));
+      
+      setCategories(categoryObjects);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      setCategories([]);
+    }
   };
 
-  const refreshData = async () => {
+  const fetchTags = async () => {
+    try {
+      const response = await fetch('/api/blog/tags');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const tagsData = await response.json();
+      
+      // The API now returns tag objects with all necessary fields
+      const tagObjects = tagsData.map((tag: any) => ({
+        id: tag._id || `tag-${tag.name}`,
+        name: tag.name,
+        slug: tag.slug || tag.name.toLowerCase().replace(/\s+/g, '-'),
+        description: tag.description || `Tag for ${tag.name}`,
+        color: tag.color || '#10B981',
+        createdAt: tag.createdAt || new Date().toISOString(),
+        postCount: tag.postCount || 0
+      }));
+      
+      setTags(tagObjects);
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+      setTags([]);
+    }
+  };const refreshData = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([fetchPosts(), fetchSubscriptions()]);
+      await Promise.all([fetchPosts(), fetchSubscriptions(), fetchCategories(), fetchTags()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -194,14 +264,221 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to delete post:', error);
     }
+  };  const handleUpdateCategory = async (oldCategoryName: string, newName: string, newDescription?: string, newColor?: string) => {
+    if (!newName.trim() || oldCategoryName === newName.trim()) {
+      setEditingCategory(null);
+      setNewCategoryName('');
+      setNewCategoryDescription('');
+      setNewCategoryColor('#3B82F6');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog/categories', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          oldCategory: oldCategoryName, 
+          newCategory: newName.trim()
+        }),
+      });
+
+      if (response.ok) {
+        await fetchCategories();
+        await fetchPosts(); // Refresh posts to show updated categories
+        setEditingCategory(null);
+        setNewCategoryName('');
+        setNewCategoryDescription('');
+        setNewCategoryColor('#3B82F6');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update category');
+      }
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      alert('Failed to update category');
+    }
+  };  const handleDeleteCategory = async (categoryName: string) => {
+    if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This will remove it from all posts.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/blog/categories?name=${encodeURIComponent(categoryName)}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchCategories();
+        await fetchPosts(); // Refresh posts to show updated categories
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      alert('Failed to delete category');
+    }
+  };const handleAddCategory = async () => {
+    if (!addCategoryName.trim()) {
+      alert('Please enter a category name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          category: addCategoryName.trim()
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setAddCategoryName('');
+        setAddCategoryDescription('');
+        setNewCategoryColor('#3B82F6');
+        setIsAddingCategory(false);
+        await fetchCategories();
+        alert('Category created successfully!');
+      } else {
+        alert(data.error || 'Failed to create category');
+      }
+    } catch (error) {
+      console.error('Failed to create category:', error);
+      alert('Failed to create category');
+    }
   };
-  const sidebarItems = [
+
+  // Tags management functions
+  const handleAddTag = async () => {
+    if (!addTagName.trim()) {
+      alert('Please enter a tag name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog/tags', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          name: addTagName.trim(),
+          description: addTagDescription.trim() || undefined,
+          color: newTagColor 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setAddTagName('');
+        setAddTagDescription('');
+        setNewTagColor('#10B981');
+        setIsAddingTag(false);
+        await fetchTags();
+        alert('Tag created successfully!');
+      } else {
+        alert(data.error || 'Failed to create tag');
+      }
+    } catch (error) {
+      console.error('Failed to create tag:', error);
+      alert('Failed to create tag');
+    }
+  };
+
+  const handleUpdateTag = async (oldTagName: string, newName: string, newDescription?: string, newColor?: string) => {
+    if (!newName.trim() || oldTagName === newName.trim()) {
+      setEditingTag(null);
+      setNewTagName('');
+      setNewTagDescription('');
+      setNewTagColor('#10B981');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog/tags', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          oldTag: oldTagName, 
+          newTag: newName.trim(),
+          description: newDescription,
+          color: newColor
+        }),
+      });
+
+      if (response.ok) {
+        await fetchTags();
+        await fetchPosts(); // Refresh posts to show updated tags
+        setEditingTag(null);
+        setNewTagName('');
+        setNewTagDescription('');
+        setNewTagColor('#10B981');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update tag');
+      }
+    } catch (error) {
+      console.error('Failed to update tag:', error);
+      alert('Failed to update tag');
+    }
+  };
+
+  const handleDeleteTag = async (tagName: string) => {
+    if (!confirm(`Are you sure you want to delete the tag "${tagName}"? This will remove it from all posts.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog/tags', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tag: tagName }),
+      });
+
+      if (response.ok) {
+        await fetchTags();
+        await fetchPosts(); // Refresh posts to show updated tags
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete tag');
+      }
+    } catch (error) {
+      console.error('Failed to delete tag:', error);
+      alert('Failed to delete tag');
+    }
+  };
+const sidebarItems = [
     { 
       id: 'posts', 
       label: 'Content', 
       icon: FileText, 
       description: 'Manage blog posts',
       count: posts.length 
+    },    { 
+      id: 'categories', 
+      label: 'Categories', 
+      icon: CategoryIcon, 
+      description: 'Manage post categories',
+      count: categories.length 
+    },    { 
+      id: 'tags', 
+      label: 'Tags', 
+      icon: TagIcon, 
+      description: 'Manage post tags',
+      count: tags.length 
     },
     { 
       id: 'analytics', 
@@ -392,13 +669,14 @@ export default function AdminDashboard() {
                 className="lg:hidden p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-xl transition-all"
               >
                 <Menu className="w-5 h-5" />
-              </button>
-              <div>
+              </button>              <div>
                 <h2 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent capitalize">
-                  {activeTab === 'posts' ? 'Content Management' : activeTab}
+                  {activeTab === 'posts' ? 'Content Management' : activeTab === 'tags' ? 'Tag Management' : activeTab}
                 </h2>
                 <p className="text-sm text-gray-400">
                   {activeTab === 'posts' && `${posts.length} total posts`}
+                  {activeTab === 'categories' && `${categories.length} categories`}
+                  {activeTab === 'tags' && `${tags.length} tags`}
                   {activeTab === 'analytics' && 'Performance insights'}
                   {activeTab === 'settings' && 'System configuration'}
                 </p>
@@ -585,7 +863,7 @@ export default function AdminDashboard() {
                                   <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                                     <span>By {post.author}</span>
                                     <span>•</span>
-                                    <span>{post.tags.length} tags</span>
+                                    <span>{(post as any).tags?.length || 0} categories</span>
                                   </div>
                                 </div>
                               </div>
@@ -773,7 +1051,412 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-          )}{activeTab === 'settings' && (
+          )}{activeTab === 'categories' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>                  <h2 className="text-2xl font-bold text-white">Category Management</h2>
+                  <p className="text-gray-400 mt-1">Manage and organize your post categories</p>
+                </div>
+                <button
+                  onClick={fetchCategories}
+                  disabled={isRefreshing}
+                  className="flex items-center px-4 py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl hover:bg-blue-600/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh Categories
+                </button>
+              </div>
+
+              {/* Categories Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">                  <div className="flex items-center">
+                    <div className="p-2.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg">                      <CategoryIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{categories.length}</h3>
+                      <p className="text-sm text-gray-300">Total Categories</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                  <div className="flex items-center">
+                    <div className="p-2.5 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{posts.length}</h3>
+                      <p className="text-sm text-gray-300">Categorized Posts</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                  <div className="flex items-center">
+                    <div className="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">
+                        {posts.length > 0 ? Math.round(posts.reduce((sum, post) => sum + ((post as any).tags?.length || 0), 0) / posts.length * 10) / 10 : 0}
+                      </h3>
+                      <p className="text-sm text-gray-300">Avg Categories/Post</p>
+                    </div>
+                  </div>
+                </div>
+              </div>              {/* Categories List */}
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                <div className="flex items-center justify-between mb-6">                  <h3 className="text-lg font-semibold text-white flex items-center">
+                    <CategoryIcon className="w-5 h-5 mr-2 text-purple-400" />
+                    All Categories
+                  </h3><button
+                    onClick={() => setIsAddingCategory(true)}
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Add New Category
+                  </button>
+                </div>                {/* Add New Category Form */}
+                {isAddingCategory && (
+                  <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                    <h4 className="text-white font-medium mb-3">Create New Category</h4>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="text"
+                        value={addCategoryName}
+                        onChange={(e) => setAddCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddCategory();
+                          } else if (e.key === 'Escape') {
+                            setIsAddingCategory(false);
+                            setAddCategoryName('');
+                          }
+                        }}
+                        placeholder="Enter category name..."
+                        className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleAddCategory}
+                        className="px-4 py-2 bg-green-500/80 text-white rounded-lg hover:bg-green-500 transition-all duration-200"
+                      >
+                        Add
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAddingCategory(false);
+                          setAddCategoryName('');
+                        }}
+                        className="px-4 py-2 bg-gray-500/80 text-white rounded-lg hover:bg-gray-500 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>                    <span className="ml-3 text-gray-400">Loading categories...</span>
+                  </div>
+                ) : categories.length > 0 ? (                  <div className="space-y-3">
+                    {categories.map((category) => {
+                      const postsWithCategory = posts.filter(post => (post as any).tags?.includes(category.name)).length;                      return (
+                        <div key={category.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-200">
+                          <div className="flex items-center flex-1">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                            {editingCategory === category.name ? (
+                              <input
+                                type="text"
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}                                onBlur={() => handleUpdateCategory(category.name, newCategoryName)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleUpdateCategory(category.name, newCategoryName);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingCategory(null);
+                                    setNewCategoryName('');
+                                  }
+                                }}
+                                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400"
+                                autoFocus
+                              />
+                            ) : (
+                              <div className="flex-1">
+                                <span className="text-white font-medium">{category.name}</span>
+                                <span className="ml-2 text-sm text-gray-400">({postsWithCategory} posts)</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {editingCategory !== category.name && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingCategory(category.name);
+                                    setNewCategoryName(category.name);
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all duration-200"
+                                  title="Edit category"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>                                <button
+                                  onClick={() => handleDeleteCategory(category.name)}
+                                  className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                                  title="Delete category"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>                ) : (
+                  <div className="text-center py-8">
+                    <CategoryIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                    <p className="text-gray-400">No categories found</p>
+                    <p className="text-sm text-gray-500 mt-1">Categories will appear here when you create posts with categories</p>
+                  </div>
+                )}
+              </div>            </div>
+          )}
+
+          {activeTab === 'tags' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Tag Management</h2>
+                  <p className="text-gray-400 mt-1">Manage and organize your post tags</p>
+                </div>
+                <button
+                  onClick={fetchTags}
+                  disabled={isRefreshing}
+                  className="flex items-center px-4 py-2 bg-green-600/20 text-green-400 border border-green-500/30 rounded-xl hover:bg-green-600/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh Tags
+                </button>
+              </div>
+
+              {/* Tags Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                  <div className="flex items-center">                    <div className="p-2.5 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg">
+                      <TagIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{tags.length}</h3>
+                      <p className="text-sm text-gray-300">Total Tags</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                  <div className="flex items-center">
+                    <div className="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{posts.length}</h3>
+                      <p className="text-sm text-gray-300">Tagged Posts</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                  <div className="flex items-center">
+                    <div className="p-2.5 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl shadow-lg">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">
+                        {posts.length > 0 ? Math.round(posts.reduce((sum, post) => sum + (post.tags?.length || 0), 0) / posts.length * 10) / 10 : 0}
+                      </h3>
+                      <p className="text-sm text-gray-300">Avg Tags/Post</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags List */}
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+                <div className="flex items-center justify-between mb-6">                  <h3 className="text-lg font-semibold text-white flex items-center">
+                    <TagIcon className="w-5 h-5 mr-2 text-green-400" />
+                    All Tags
+                  </h3>
+                  <button
+                    onClick={() => setIsAddingTag(true)}
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500/80 to-teal-500/80 text-white rounded-xl hover:from-green-500 hover:to-teal-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Add New Tag
+                  </button>
+                </div>
+
+                {/* Add New Tag Form */}
+                {isAddingTag && (
+                  <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                    <h4 className="text-white font-medium mb-3">Create New Tag</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="text"
+                          value={addTagName}
+                          onChange={(e) => setAddTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleAddTag();
+                            } else if (e.key === 'Escape') {
+                              setIsAddingTag(false);
+                              setAddTagName('');
+                              setAddTagDescription('');
+                            }
+                          }}
+                          placeholder="Enter tag name..."
+                          className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-400"
+                          autoFocus
+                        />
+                        <input
+                          type="color"
+                          value={newTagColor}
+                          onChange={(e) => setNewTagColor(e.target.value)}
+                          className="w-12 h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
+                          title="Select tag color"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={addTagDescription}
+                        onChange={(e) => setAddTagDescription(e.target.value)}
+                        placeholder="Enter tag description (optional)..."
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-400"
+                      />
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={handleAddTag}
+                          className="px-4 py-2 bg-green-500/80 text-white rounded-lg hover:bg-green-500 transition-all duration-200"
+                        >
+                          Add Tag
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsAddingTag(false);
+                            setAddTagName('');
+                            setAddTagDescription('');
+                            setNewTagColor('#10B981');
+                          }}
+                          className="px-4 py-2 bg-gray-500/80 text-white rounded-lg hover:bg-gray-500 transition-all duration-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    <span className="ml-3 text-gray-400">Loading tags...</span>
+                  </div>
+                ) : tags.length > 0 ? (
+                  <div className="space-y-3">
+                    {tags.map((tag) => {
+                      const postsWithTag = posts.filter(post => post.tags?.includes(tag.name)).length;
+                      return (
+                        <div key={tag.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-200">
+                          <div className="flex items-center flex-1">
+                            <div 
+                              className="w-3 h-3 rounded-full mr-3" 
+                              style={{ backgroundColor: tag.color || '#10B981' }}
+                            ></div>
+                            {editingTag === tag.name ? (
+                              <div className="flex-1 space-y-2">
+                                <input
+                                  type="text"
+                                  value={newTagName}
+                                  onChange={(e) => setNewTagName(e.target.value)}
+                                  onBlur={() => handleUpdateTag(tag.name, newTagName, newTagDescription, newTagColor)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleUpdateTag(tag.name, newTagName, newTagDescription, newTagColor);
+                                    } else if (e.key === 'Escape') {
+                                      setEditingTag(null);
+                                      setNewTagName('');
+                                      setNewTagDescription('');
+                                      setNewTagColor('#10B981');
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-400"
+                                  autoFocus
+                                />
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={newTagDescription}
+                                    onChange={(e) => setNewTagDescription(e.target.value)}
+                                    placeholder="Description..."
+                                    className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-400"
+                                  />
+                                  <input
+                                    type="color"
+                                    value={newTagColor}
+                                    onChange={(e) => setNewTagColor(e.target.value)}
+                                    className="w-10 h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-white font-medium">{tag.name}</span>
+                                  <span className="text-sm text-gray-400">({postsWithTag} posts)</span>
+                                </div>
+                                {tag.description && (
+                                  <p className="text-xs text-gray-500 mt-1">{tag.description}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {editingTag !== tag.name && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingTag(tag.name);
+                                    setNewTagName(tag.name);
+                                    setNewTagDescription(tag.description || '');
+                                    setNewTagColor(tag.color || '#10B981');
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all duration-200"
+                                  title="Edit tag"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTag(tag.name)}
+                                  className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-all duration-200"
+                                  title="Delete tag"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (                  <div className="text-center py-8">
+                    <TagIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                    <p className="text-gray-400">No tags found</p>
+                    <p className="text-sm text-gray-500 mt-1">Tags will appear here when you create posts with tags</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
             <div className="max-w-6xl">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">

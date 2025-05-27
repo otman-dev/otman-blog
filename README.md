@@ -134,6 +134,48 @@ The project is configured for Vercel deployment with `vercel.json`. Simply:
 - `DELETE /api/blog/posts/[id]` - Delete post
 - `GET /api/blog/posts/by-slug/[slug]` - Get post by slug
 
+## 📊 Database Seeding
+
+### Atlantic Dunes Content Seeding
+
+To populate your database with Atlantic Dunes content (categories, tags, and sample posts), run:
+
+```bash
+npm run seed-atlantic-dunes
+```
+
+This script will:
+- **Clear existing data** (categories, tags, posts)
+- **Create 6 categories** based on Atlantic Dunes poles:
+  - Pôle Energie (Energy)
+  - Pôle Air (Air Treatment)
+  - Pôle Déchets (Waste Management)
+  - Pôle Eau (Water Treatment)
+  - Pôle Industrie (Industrial Engineering)
+  - Pôle Eco-Bâtiment (Eco-Building)
+- **Create 10 relevant tags** for content categorization
+- **Generate 6 comprehensive blog posts** about each pole
+- **Set up database indexes** for optimal performance
+
+**Note**: This will overwrite existing content. Make sure to backup your data if needed.
+
+### Sample Content Included
+
+The seeding script creates professional blog posts covering:
+- Construction and eco-building expertise
+- Industrial risk studies and modeling
+- Water treatment solutions and equipment
+- Waste management and valorization
+- Air treatment and gas purification
+- Energy optimization and efficiency
+
+Each post includes:
+- Professional French content about Atlantic Dunes services
+- Proper categorization with relevant poles
+- Strategic tag assignment for discoverability
+- Rich markdown formatting with headers and lists
+- Published status for immediate visibility
+
 ## 📄 License
 
 This project is licensed under the MIT License.

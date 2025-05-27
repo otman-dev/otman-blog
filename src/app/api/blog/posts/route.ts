@@ -25,10 +25,9 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
-
-    const body = await request.json();
-    const { title, content, excerpt, tags, status } = body;
+    }    const body = await request.json();
+    // Handle both 'categories' and 'tags' as separate fields
+    const { title, content, excerpt, categories, tags, status } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -38,19 +37,22 @@ export async function POST(request: NextRequest) {
     }
 
     const slug = generateSlug(title);
+    const categoriesArray = categories || [];
+    const tagsArray = tags || [];
     
     const postData = {
       title,
       content,
       excerpt: excerpt || content.substring(0, 160) + '...',
       slug,
-      tags: tags || [],
+      categories: categoriesArray,
+      tags: tagsArray,
       author: session.username || 'Admin',
       published: status === 'published',
       featured: false,
       category: '',
       metaDescription: excerpt || '',
-      metaKeywords: tags?.join(', ') || '',
+      metaKeywords: [...categoriesArray, ...tagsArray].join(', '),
       readingTime: Math.ceil(content.split(' ').length / 200),
     };
 

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getPostsCollection, getCategoriesCollection, initializeDatabase } from './mongodb';
-import { Post, Category } from './types';
+import { getPostsCollection, getCategoriesCollection, getTagsCollection, initializeDatabase } from './mongodb';
+import { Post, Category, Tag } from './types';
 
 // Posts service
 export async function getAllPosts(options: {
@@ -21,8 +21,7 @@ export async function getAllPosts(options: {
     
     if (options.published !== undefined) filter.published = options.published;
     if (options.category) filter.category = options.category;
-    if (options.featured !== undefined) filter.featured = options.featured;
-    
+    if (options.featured !== undefined) filter.featured = options.featured;    
     const query = postsCollection.find(filter).sort({ createdAt: -1 });
     
     if (options.skip) query.skip(options.skip);
@@ -70,6 +69,7 @@ export async function createPost(postData: Omit<Post, 'id' | 'createdAt' | 'upda
       publishedAt: postData.published ? new Date().toISOString() : undefined,
     };
     
+    // Store the post with both categories and tags fields
     await postsCollection.insertOne(newPost);
     return newPost;
   } catch (error) {
@@ -189,6 +189,78 @@ export async function deleteCategory(id: string): Promise<boolean> {
     return result.deletedCount > 0;
   } catch (error) {
     console.error('Error deleting category:', error);
+    return false;
+  }
+}
+
+// Tags service
+export async function getAllTags(): Promise<Tag[]> {
+  try {
+    await initializeDatabase();
+    const tagsCollection = await getTagsCollection();
+    const tags = await tagsCollection.find({}).sort({ name: 1 }).toArray();
+    
+    // Add post count for each tag
+    const postsCollection = await getPostsCollection();
+    const tagsWithCounts = await Promise.all(
+      tags.map(async (tag) => {
+        const postCount = await postsCollection.countDocuments({ tags: tag.name });
+        return { ...tag, postCount };
+      })
+    );
+    
+    return tagsWithCounts;
+  } catch (error) {
+    console.error('Error getting tags:', error);
+    return [];
+  }
+}
+
+export async function createTag(tagData: Omit<Tag, 'id' | 'createdAt'>): Promise<Tag | null> {
+  try {
+    await initializeDatabase();
+    const tagsCollection = await getTagsCollection();
+    
+    const newTag: Tag = {
+      ...tagData,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+    };
+    
+    await tagsCollection.insertOne(newTag);
+    return newTag;
+  } catch (error) {
+    console.error('Error creating tag:', error);
+    return null;
+  }
+}
+
+export async function updateTag(id: string, updates: Partial<Tag>): Promise<Tag | null> {
+  try {
+    await initializeDatabase();
+    const tagsCollection = await getTagsCollection();
+    
+    const result = await tagsCollection.findOneAndUpdate(
+      { id },
+      { $set: updates },
+      { returnDocument: 'after' }
+    );
+    
+    return result || null;
+  } catch (error) {
+    console.error('Error updating tag:', error);
+    return null;
+  }
+}
+
+export async function deleteTag(id: string): Promise<boolean> {
+  try {
+    await initializeDatabase();
+    const tagsCollection = await getTagsCollection();
+    const result = await tagsCollection.deleteOne({ id });
+    return result.deletedCount > 0;
+  } catch (error) {
+    console.error('Error deleting tag:', error);
     return false;
   }
 }
