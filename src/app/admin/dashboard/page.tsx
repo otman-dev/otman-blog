@@ -843,9 +843,9 @@ const sidebarItems = [
                           </th>
                           <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Actions
-                          </th>
-                        </tr>
-                      </thead>                      <tbody className="divide-y divide-white/10">
+                          </th>                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/10">
                         {posts.map((post) => (
                           <tr key={post._id} className="group hover:bg-white/10 transition-all duration-200">
                             <td className="px-6 py-5">
