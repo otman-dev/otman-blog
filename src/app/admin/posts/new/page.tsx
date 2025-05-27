@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Eye, ArrowLeft, FolderOpen, Calendar, Sparkles, FileText, Globe, ChevronDown, X, Tag as TagIcon } from 'lucide-react';
 
@@ -18,7 +18,10 @@ export default function NewPost() {
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');  const router = useRouter();
+  const [error, setError] = useState('');
+  const categoryButtonRef = useRef<HTMLDivElement>(null);
+  const tagButtonRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const fetchAvailableCategories = useCallback(async () => {
     try {
       const response = await fetch('/api/blog/categories');
@@ -311,7 +314,7 @@ export default function NewPost() {
                   </div>
                 </div>
               </div>              {/* Categories */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6" style={{position: 'relative', zIndex: 100}}>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                   <FolderOpen className="w-5 h-5 mr-2 text-purple-400" />
                   Categories
@@ -336,10 +339,8 @@ export default function NewPost() {
                         </span>
                       ))}
                     </div>
-                  )}
-
-                  {/* Category Dropdown */}
-                  <div className="relative category-dropdown">
+                  )}                  {/* Category Dropdown */}
+                  <div className="relative category-dropdown" style={{position: 'relative'}} ref={categoryButtonRef}>
                     <button
                       type="button"
                       onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
@@ -351,7 +352,7 @@ export default function NewPost() {
                       <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
                     
-                    {isCategoryDropdownOpen && (                      <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto category-dropdown">
+                    {isCategoryDropdownOpen && (                      <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-[1000] max-h-48 overflow-y-auto" style={{width: '100%', marginTop: '0.25rem'}}>
                         {availableCategories.length > 0 ? (
                           availableCategories.map((category) => (
                             <button
@@ -393,10 +394,8 @@ export default function NewPost() {
                     Primary organization for your content
                   </p>
                 </div>
-              </div>
-
-              {/* Tags */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+              </div>              {/* Tags */}
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6" style={{position: 'relative', zIndex: 50}}>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                   <TagIcon className="w-5 h-5 mr-2 text-blue-400" />
                   Tags
@@ -429,10 +428,8 @@ export default function NewPost() {
                         );
                       })}
                     </div>
-                  )}
-
-                  {/* Tag Dropdown */}
-                  <div className="relative tag-dropdown">
+                  )}                  {/* Tag Dropdown */}
+                  <div className="relative tag-dropdown" style={{position: 'relative'}} ref={tagButtonRef}>
                     <button
                       type="button"
                       onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
@@ -445,7 +442,7 @@ export default function NewPost() {
                     </button>
                     
                     {isTagDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto tag-dropdown">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-[1000] max-h-48 overflow-y-auto" style={{width: '100%', marginTop: '0.25rem'}}>
                         {availableTags.length > 0 ? (
                           availableTags.map((tag) => (
                             <button
