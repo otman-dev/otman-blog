@@ -13,8 +13,12 @@ export async function getAllPosts(options: {
   try {
     await initializeDatabase();
     const postsCollection = await getPostsCollection();
+      const filter: {
+      published?: boolean;
+      category?: string;
+      featured?: boolean;
+    } = {};
     
-    const filter: any = {};
     if (options.published !== undefined) filter.published = options.published;
     if (options.category) filter.category = options.category;
     if (options.featured !== undefined) filter.featured = options.featured;

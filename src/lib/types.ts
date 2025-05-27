@@ -47,7 +47,7 @@ export interface SessionData {
   isAuthenticated?: boolean;
 }
 
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

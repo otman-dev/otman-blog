@@ -53,7 +53,7 @@ export async function getEmailSubscriptionsCollection(): Promise<Collection<Emai
 
 export async function initializeDatabase() {
   try {
-    const { db } = await connectToDatabase();
+    await connectToDatabase();
     
     // Create indexes for better performance
     const postsCollection = await getPostsCollection();

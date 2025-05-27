@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
@@ -34,8 +35,8 @@ export default function AdminLogin() {
         router.push('/admin/dashboard');
       } else {
         setError(data.error || 'Login failed');
-      }
-    } catch (error) {
+      }    } catch (error) {
+      console.error('Login error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -117,16 +118,14 @@ export default function AdminLogin() {
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
-          </form>
-
-          {/* Back to Home */}
+          </form>          {/* Back to Home */}
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-gray-400 hover:text-white text-sm transition-colors duration-200 underline"
             >
               ← Back to home
-            </a>
+            </Link>
           </div>
         </div>
       </div>

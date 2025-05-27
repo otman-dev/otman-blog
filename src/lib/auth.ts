@@ -13,27 +13,27 @@ export async function authenticateUser(username: string, password: string): Prom
   try {
     await initializeDatabase();
     const usersCollection = await getUsersCollection();
-    
-    const user = await usersCollection.findOne({ 
+      const userDoc = await usersCollection.findOne({ 
       $or: [{ username }, { email: username }] 
-    });
+    }) as User;
     
-    if (!user) {
+    if (!userDoc) {
       return { success: false, error: 'Invalid credentials' };
     }
     
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, userDoc.passwordHash);
     if (!isPasswordValid) {
       return { success: false, error: 'Invalid credentials' };
     }
     
     // Update last login
     await usersCollection.updateOne(
-      { id: user.id },
+      { id: userDoc.id },
       { $set: { lastLogin: new Date().toISOString() } }
     );
-    
-    const { passwordHash, ...userWithoutPassword } = user;
+    // Remove passwordHash from userDoc
+    const userWithoutPassword = { ...userDoc };
+    delete userWithoutPassword.passwordHash;
     return { 
       success: true, 
       user: userWithoutPassword
@@ -78,10 +78,11 @@ export async function createUser(userData: {
       lastName: userData.lastName,
       createdAt: new Date().toISOString(),
     };
+      await usersCollection.insertOne(newUser);
     
-    await usersCollection.insertOne(newUser);
-    
-    const { passwordHash: _, ...userWithoutPassword } = newUser;
+    // Remove passwordHash from newUser
+    const userWithoutPassword = { ...newUser };
+    delete userWithoutPassword.passwordHash;
     return {
       success: true,
       user: userWithoutPassword
@@ -96,13 +97,15 @@ export async function getUserById(id: string): Promise<Omit<User, 'passwordHash'
   try {
     await initializeDatabase();
     const usersCollection = await getUsersCollection();
+    const userDoc = await usersCollection.findOne({ id }) as User | null;
     
-    const user = await usersCollection.findOne({ id });
-    if (!user) {
+    if (!userDoc) {
       return null;
     }
     
-    const { passwordHash, ...userWithoutPassword } = user;
+    // Remove passwordHash from userDoc
+    const userWithoutPassword = { ...userDoc };
+    delete userWithoutPassword.passwordHash;
     return userWithoutPassword;
   } catch (error) {
     console.error('Error getting user:', error);

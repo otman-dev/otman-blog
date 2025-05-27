@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Calendar, User, Clock, ArrowLeft, Tag, Share2, Home, Eye, Bookmark, ThumbsUp, MessageCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,7 +22,6 @@ export default function BlogPostPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const params = useParams();
-  const router = useRouter();
 
   useEffect(() => {
     if (params.slug) {
@@ -89,9 +88,8 @@ export default function BlogPostPage() {
             </div>
             <h1 className="text-2xl font-bold text-white mb-4">
               {error || 'Article not found'}
-            </h1>
-            <p className="text-gray-400 mb-6">
-              The article you're looking for doesn't exist or has been removed.
+            </h1>            <p className="text-gray-400 mb-6">
+              The article you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
             <Link
               href="/blog"

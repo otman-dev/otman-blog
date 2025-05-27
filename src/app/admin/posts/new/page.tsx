@@ -1,10 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Eye, ArrowLeft, Tag, Calendar, Sparkles, FileText, User, Globe } from 'lucide-react';
+import { Save, Eye, ArrowLeft, Tag, Calendar, Sparkles, FileText, Globe } from 'lucide-react';
 
-export default function NewPost() {
-  const [formData, setFormData] = useState({
+export default function NewPost() {  const [formData, setFormData] = useState({
     title: '',
     content: '',
     excerpt: '',
@@ -12,34 +11,26 @@ export default function NewPost() {
     status: 'draft' as 'draft' | 'published'
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<any>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/session');
       const data = await response.json();
       
       if (!response.ok || !data.isAuthenticated) {
-        setUser(null);
         router.push('/admin/login');
         return;
       }
-      
-      setUser(data.user);
-      setIsAuthenticating(false);
     } catch (error) {
       console.error('Auth check error:', error);
-      setUser(null);
       router.push('/admin/login');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +54,8 @@ export default function NewPost() {
       } else {
         const data = await response.json();
         setError(data.error || 'Failed to create post');
-      }
-    } catch (error) {
+      }    } catch (error) {
+      console.error('Post creation error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);

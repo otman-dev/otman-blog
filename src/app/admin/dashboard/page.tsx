@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
@@ -24,6 +24,11 @@ import {
   Mail,
   RefreshCw
 } from 'lucide-react';
+
+interface User {
+  id: string;
+  username: string;
+}
 
 interface BlogPost {
   _id: string;
@@ -52,27 +57,18 @@ interface SubscriptionData {
   recent: EmailSubscription[];
 }
 
-export default function AdminDashboard() {  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function AdminDashboard() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionData>({ total: 0, recent: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-  useEffect(() => {
-    if (user) {
-      fetchPosts();
-      fetchSubscriptions();
-    }
-  }, [user]);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/session');
       const data = await response.json();
@@ -91,7 +87,18 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
       setUser(null);
       router.push('/admin/login');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (user) {
+      fetchPosts();
+      fetchSubscriptions();
+    }
+  }, [user]);
   const fetchPosts = async () => {
     try {
       const response = await fetch('/api/blog/posts');
@@ -560,9 +567,8 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
                             Actions
                           </th>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/10">
-                        {posts.map((post, index) => (
+                      </thead>                      <tbody className="divide-y divide-white/10">
+                        {posts.map((post) => (
                           <tr key={post._id} className="group hover:bg-white/10 transition-all duration-200">
                             <td className="px-6 py-5">
                               <div className="flex items-start">
@@ -700,9 +706,8 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
                     <Mail className="w-5 h-5 mr-2 text-orange-400" />
                     Recent Email Subscriptions
                   </h3>
-                  {subscriptions.recent.length > 0 ? (
-                    <div className="space-y-3">
-                      {subscriptions.recent.map((subscription, index) => (
+                  {subscriptions.recent.length > 0 ? (                    <div className="space-y-3">
+                      {subscriptions.recent.map((subscription) => (
                         <div key={subscription.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
                           <div>
                             <p className="text-sm font-medium text-white">{subscription.email}</p>

@@ -4,12 +4,11 @@ import { EmailSubscription } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
-  try {
-    // Parse request body
+  try {    // Parse request body
     let body;
     try {
       body = await request.json();
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         { success: false, error: 'Invalid JSON in request body' },
         { status: 400 }

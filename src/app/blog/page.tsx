@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Calendar, User, Clock, ArrowRight, Search, Tag, Home, Filter, Grid, Sparkles, TrendingUp, Eye } from 'lucide-react';
+import { Calendar, User, Clock, ArrowRight, Search, Tag, Home, Filter, Grid, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
