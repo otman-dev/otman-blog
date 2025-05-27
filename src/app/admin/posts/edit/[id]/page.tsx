@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save, Eye, Calendar, FolderOpen, User, Sparkles, FileText, Globe, Clock, ChevronDown, X, Tag as TagIcon } from 'lucide-react';
 
@@ -14,7 +14,8 @@ interface PostFormData {
   publishedAt: string;
 }
 
-export default function EditPostPage() {  const [formData, setFormData] = useState<PostFormData>({
+export default function EditPostPage() {
+  const [formData, setFormData] = useState<PostFormData>({
     title: '',
     content: '',
     excerpt: '',
@@ -30,6 +31,8 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
   const [error, setError] = useState('');
+  const categoryButtonRef = useRef<HTMLDivElement>(null);
+  const tagButtonRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const params = useParams();
 
@@ -421,7 +424,7 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white placeholder-gray-400 backdrop-blur-xl"
               />
             </div>            {/* Categories */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6" style={{position: 'relative', zIndex: 100}}>
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                 <FolderOpen className="w-5 h-5 mr-2 text-purple-400" />
                 Categories
@@ -446,10 +449,8 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                       </span>
                     ))}
                   </div>
-                )}
-                
-                {/* Category Dropdown */}
-                <div className="relative category-dropdown">
+                )}                {/* Category Dropdown */}
+                <div className="relative category-dropdown" style={{position: 'relative'}}>
                   <button
                     type="button"
                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
@@ -459,9 +460,7 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                       {formData.categories.length > 0 ? `${formData.categories.length} category(s) selected` : 'Select categories'}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isCategoryDropdownOpen && (                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto">
+                  </button>                  {isCategoryDropdownOpen && (                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-[1000] max-h-48 overflow-y-auto" style={{width: '100%', marginTop: '0.25rem'}}>
                       {availableCategories.length > 0 ? (
                         availableCategories.map((category) => (
                           <button
@@ -503,10 +502,8 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                   Select from existing categories or create new ones in the dashboard
                 </p>
               </div>
-            </div>
-
-            {/* Tags */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
+            </div>            {/* Tags */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6" style={{position: 'relative', zIndex: 50}}>
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                 <TagIcon className="w-5 h-5 mr-2 text-blue-400" />
                 Tags
@@ -539,10 +536,8 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                       );
                     })}
                   </div>
-                )}
-
-                {/* Tag Dropdown */}
-                <div className="relative tag-dropdown">
+                )}                {/* Tag Dropdown */}
+                <div className="relative tag-dropdown" style={{position: 'relative'}}>
                   <button
                     type="button"
                     onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
@@ -552,10 +547,8 @@ export default function EditPostPage() {  const [formData, setFormData] = useSta
                       {formData.tags.length > 0 ? `${formData.tags.length} tag${formData.tags.length === 1 ? '' : 's'} selected` : 'Select tags'}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${isTagDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isTagDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto tag-dropdown">
+                  </button>                  {isTagDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-[1000] max-h-48 overflow-y-auto tag-dropdown" style={{width: '100%', marginTop: '0.25rem'}}>
                       {availableTags.length > 0 ? (
                         availableTags.map((tag) => (
                           <button
