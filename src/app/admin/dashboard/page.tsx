@@ -271,17 +271,17 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
       setNewCategoryDescription('');
       setNewCategoryColor('#3B82F6');
       return;
-    }
-
-    try {
+    }    try {
       const response = await fetch('/api/blog/categories', {
-        method: 'PATCH',
+        method: 'PUT',  // Changed from PATCH to PUT to match API route
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          oldCategory: oldCategoryName, 
-          newCategory: newName.trim()
+          oldName: oldCategoryName, 
+          newName: newName.trim(),
+          description: newDescription || '',
+          color: newColor || '#3B82F6'
         }),
       });
 
@@ -325,16 +325,16 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
     if (!addCategoryName.trim()) {
       alert('Please enter a category name');
       return;
-    }
-
-    try {
+    }    try {
       const response = await fetch('/api/blog/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          category: addCategoryName.trim()
+          name: addCategoryName.trim(),
+          description: addCategoryDescription.trim(),
+          color: newCategoryColor
         }),
       });
 
@@ -392,30 +392,30 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
       console.error('Failed to create tag:', error);
       alert('Failed to create tag');
     }
-  };
-
-  const handleUpdateTag = async (oldTagName: string, newName: string, newDescription?: string, newColor?: string) => {
-    if (!newName.trim() || oldTagName === newName.trim()) {
-      setEditingTag(null);
-      setNewTagName('');
-      setNewTagDescription('');
-      setNewTagColor('#10B981');
+  };  const handleUpdateTag = async (oldTagName: string, newName: string, newDescription?: string, newColor?: string) => {
+    if (!newName.trim()) {
+      alert("Tag name cannot be empty");
       return;
-    }
-
-    try {
+    }    try {
+      const requestBody = { 
+        oldTag: oldTagName, 
+        newTag: newName.trim(),
+        description: newDescription || '', // Ensure description is never undefined
+        color: newColor || '#10B981' // Ensure color is never undefined
+      };
+      
+      console.log('Updating tag with data:', requestBody);
+      
       const response = await fetch('/api/blog/tags', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          oldTag: oldTagName, 
-          newTag: newName.trim(),
-          description: newDescription,
-          color: newColor
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      const data = await response.json();
+      console.log('Tag update response:', data);
 
       if (response.ok) {
         await fetchTags();
@@ -424,8 +424,8 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
         setNewTagName('');
         setNewTagDescription('');
         setNewTagColor('#10B981');
+        alert('Tag updated successfully!');
       } else {
-        const data = await response.json();
         alert(data.error || 'Failed to update tag');
       }
     } catch (error) {
@@ -838,10 +838,10 @@ const sidebarItems = [
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Published
-                          </th>
-                          <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          </th>                          <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Actions
-                          </th>                        </tr>
+                          </th>
+                        </tr>
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {posts.map((post) => (
@@ -915,7 +915,8 @@ const sidebarItems = [
               )}
               </div>
             </div>
-          )}          {activeTab === 'analytics' && (
+          )}
+          {activeTab === 'analytics' && (
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Analytics Overview</h2>
@@ -1369,24 +1370,21 @@ const sidebarItems = [
                             <div 
                               className="w-3 h-3 rounded-full mr-3" 
                               style={{ backgroundColor: tag.color || '#10B981' }}
-                            ></div>
-                            {editingTag === tag.name ? (
+                            ></div>                            {editingTag === tag.name ? (
                               <div className="flex-1 space-y-2">
                                 <input
                                   type="text"
                                   value={newTagName}
                                   onChange={(e) => setNewTagName(e.target.value)}
-                                  onBlur={() => handleUpdateTag(tag.name, newTagName, newTagDescription, newTagColor)}
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleUpdateTag(tag.name, newTagName, newTagDescription, newTagColor);
-                                    } else if (e.key === 'Escape') {
+                                    if (e.key === 'Escape') {
                                       setEditingTag(null);
                                       setNewTagName('');
                                       setNewTagDescription('');
                                       setNewTagColor('#10B981');
                                     }
                                   }}
+                                  placeholder="Tag name..."
                                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-400"
                                   autoFocus
                                 />
@@ -1403,7 +1401,29 @@ const sidebarItems = [
                                     value={newTagColor}
                                     onChange={(e) => setNewTagColor(e.target.value)}
                                     className="w-10 h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
+                                    title="Choose tag color"
                                   />
+                                </div>
+                                <div className="flex justify-end space-x-2 mt-2">
+                                  <button
+                                    onClick={() => handleUpdateTag(tag.name, newTagName, newTagDescription, newTagColor)}
+                                    className="px-3 py-1 bg-green-500/80 text-white rounded-lg hover:bg-green-500 transition-all duration-200"
+                                    title="Save changes"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingTag(null);
+                                      setNewTagName('');
+                                      setNewTagDescription('');
+                                      setNewTagColor('#10B981');
+                                    }}
+                                    className="px-3 py-1 bg-gray-500/80 text-white rounded-lg hover:bg-gray-500 transition-all duration-200"
+                                    title="Cancel editing"
+                                  >
+                                    Cancel
+                                  </button>
                                 </div>
                               </div>
                             ) : (

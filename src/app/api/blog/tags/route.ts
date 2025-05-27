@@ -103,6 +103,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const { oldTag, newTag, description, color } = await request.json();
     
+    console.log('Received tag update request:', { oldTag, newTag, description, color });
+    
     if (!oldTag || !newTag) {
       return NextResponse.json(
         { error: 'oldTag and newTag are required' },
@@ -121,18 +123,25 @@ export async function PATCH(request: NextRequest) {
       slug: newSlug
     };
     
-    if (description !== undefined) {
-      updateData.description = description;
-    }
+    // Always include these fields in the update, even if they're empty strings
+    updateData.description = description;
+    updateData.color = color || '#10B981';
     
-    if (color !== undefined) {
-      updateData.color = color;
-    }
+    console.log('Updating tag with data:', updateData);
     
     const updateResult = await tagsCollection.updateOne(
       { name: oldTag },
       { $set: updateData }
     );
+    
+    if (updateResult.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Tag not found' },
+        { status: 404 }
+      );
+    }
+      // Check if the update was found and applied
+    console.log('Tag update result:', updateResult);
     
     if (updateResult.matchedCount === 0) {
       return NextResponse.json(
@@ -155,18 +164,19 @@ export async function PATCH(request: NextRequest) {
       
       return NextResponse.json({ 
         success: true, 
-        message: `Updated tag and ${posts.length} posts` 
+        message: `Updated tag and ${posts.length} posts`,
+        updatedFields: { name: newTag, description, color }
       });
     }
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Tag updated successfully' 
-    });
-  } catch (error) {
+      message: 'Tag updated successfully',
+      updatedFields: { description, color }
+    });} catch (error) {
     console.error('Error updating tag:', error);
     return NextResponse.json(
-      { error: 'Failed to update tag' },
+      { error: 'Failed to update tag', details: String(error) },
       { status: 500 }
     );
   }
