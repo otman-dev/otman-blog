@@ -1,103 +1,159 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import { Clock, Mail, Bell } from 'lucide-react';
+import Image from 'next/image';
 
-export default function Home() {
+export default function ComingSoon() {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  // Launch date - set to a future date
+  const launchDate = new Date('2025-07-01T00:00:00');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const difference = launchDate.getTime() - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsSubscribed(true);
+        setEmail('');
+      } else {
+        alert(data.error || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('Network error. Please try again.');
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="max-w-md w-full mx-auto text-center">
+        {/* Logo/Brand */}
+        <div className="mb-8">
+          <div className="w-20 h-20 mx-auto mb-6 relative">
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/logo.png"
+              alt="AtlanticDunes Logo"
+              width={80}
+              height={80}
+              className="object-contain"
             />
-            Deploy now
-          </a>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            AtlanticDunes
+          </h1>
+          <p className="text-gray-300 text-sm sm:text-base">
+            Enterprise insights and innovation
+          </p>
+        </div>
+
+        {/* Countdown Timer */}
+        <div className="mb-8">
+          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4">
+            {Object.entries(timeLeft).map(([unit, value]) => (
+              <div key={unit} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold text-white">
+                  {value.toString().padStart(2, '0')}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-300 capitalize">
+                  {unit}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-center text-gray-400 text-sm">
+            <Clock className="w-4 h-4 mr-2" />
+            Until launch
+          </div>
+        </div>
+
+        {/* Email Subscription */}
+        <div className="mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
+            Get notified when we launch
+          </h2>
+          
+          {!isSubscribed ? (
+            <form onSubmit={handleSubscribe} className="space-y-3">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-200 transform hover:scale-105"
+              >
+                Notify Me
+              </button>
+            </form>
+          ) : (
+            <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+              <div className="flex items-center justify-center text-green-400">
+                <Bell className="w-5 h-5 mr-2" />
+                Thank you! We'll notify you when we launch.
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Admin Access */}
+        <div className="text-center">
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/admin/login"
+            className="block text-gray-400 hover:text-white text-sm transition-colors duration-200 underline"
           >
-            Read our docs
+            Admin Access
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
+
