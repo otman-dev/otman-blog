@@ -25,15 +25,14 @@ export async function authenticateUser(username: string, password: string): Prom
     if (!isPasswordValid) {
       return { success: false, error: 'Invalid credentials' };
     }
-    
-    // Update last login
+      // Update last login
     await usersCollection.updateOne(
       { id: userDoc.id },
-      { $set: { lastLogin: new Date().toISOString() } }
-    );
-    // Remove passwordHash from userDoc
-    const userWithoutPassword = { ...userDoc };
-    delete userWithoutPassword.passwordHash;
+      { $set: { lastLogin: new Date().toISOString() } }    );
+    
+    // Remove passwordHash from userDoc using destructuring
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, ...userWithoutPassword } = userDoc;
     return { 
       success: true, 
       user: userWithoutPassword
@@ -77,12 +76,11 @@ export async function createUser(userData: {
       firstName: userData.firstName,
       lastName: userData.lastName,
       createdAt: new Date().toISOString(),
-    };
-      await usersCollection.insertOne(newUser);
-    
-    // Remove passwordHash from newUser
-    const userWithoutPassword = { ...newUser };
-    delete userWithoutPassword.passwordHash;
+    };      await usersCollection.insertOne(newUser);
+      
+    // Remove passwordHash from newUser using destructuring
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _, ...userWithoutPassword } = newUser;
     return {
       success: true,
       user: userWithoutPassword
@@ -98,14 +96,12 @@ export async function getUserById(id: string): Promise<Omit<User, 'passwordHash'
     await initializeDatabase();
     const usersCollection = await getUsersCollection();
     const userDoc = await usersCollection.findOne({ id }) as User | null;
-    
-    if (!userDoc) {
+      if (!userDoc) {
       return null;
     }
-    
-    // Remove passwordHash from userDoc
-    const userWithoutPassword = { ...userDoc };
-    delete userWithoutPassword.passwordHash;
+    // Remove passwordHash from userDoc using destructuring
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _, ...userWithoutPassword } = userDoc;
     return userWithoutPassword;
   } catch (error) {
     console.error('Error getting user:', error);
