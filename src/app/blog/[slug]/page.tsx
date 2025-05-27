@@ -4,6 +4,11 @@ import { useParams } from 'next/navigation';
 import { Calendar, User, Clock, ArrowLeft, FolderOpen, Share2, Home, Eye, Bookmark, ThumbsUp, MessageCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
 
 interface BlogPost {
   _id: string;
@@ -14,6 +19,7 @@ interface BlogPost {
   publishedAt: string;
   slug: string;
   categories: string[];
+  tags: string[];
   readingTime: number;
 }
 
@@ -228,30 +234,49 @@ export default function BlogPostPage() {
               </div>
             )}
           </div>
-        </header>
-
-        {/* Article Content */}
+        </header>        {/* Article Content */}
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-8 sm:p-12 mb-12">
           <div className="prose prose-lg prose-invert max-w-none">
-            <div 
-              className="text-gray-200 leading-relaxed text-lg"
-              style={{
-                lineHeight: '1.8',
-                fontSize: '1.125rem'
-              }}
-              dangerouslySetInnerHTML={{ 
-                __html: post.content
-                  .replace(/\n/g, '<br>')
-                  .replace(/<p>/g, '<p class="mb-6">')
-                  .replace(/<h1>/g, '<h1 class="text-3xl font-bold text-white mb-6 mt-8">')
-                  .replace(/<h2>/g, '<h2 class="text-2xl font-bold text-white mb-4 mt-6">')
-                  .replace(/<h3>/g, '<h3 class="text-xl font-bold text-white mb-3 mt-4">')
-                  .replace(/<strong>/g, '<strong class="text-white font-semibold">')
-                  .replace(/<em>/g, '<em class="text-blue-300">')
-                  .replace(/<blockquote>/g, '<blockquote class="border-l-4 border-blue-500 pl-6 my-6 text-gray-300 italic">')
-                  .replace(/<code>/g, '<code class="bg-slate-800 px-2 py-1 rounded text-blue-300">')
-              }}
-            />
+            <div className="markdown-content text-gray-200 leading-relaxed text-lg">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                components={{
+                  h1: (props) => <h1 className="text-3xl font-bold text-white mb-6 mt-8" {...props} />,
+                  h2: (props) => <h2 className="text-2xl font-bold text-white mb-4 mt-6" {...props} />,
+                  h3: (props) => <h3 className="text-xl font-bold text-white mb-3 mt-4" {...props} />,
+                  h4: (props) => <h4 className="text-lg font-bold text-white mb-2 mt-4" {...props} />,
+                  p: (props) => <p className="mb-6 text-gray-200" style={{lineHeight: '1.8'}} {...props} />,
+                  a: (props) => <a className="text-blue-400 hover:text-blue-300 underline" {...props} />,
+                  strong: (props) => <strong className="text-white font-semibold" {...props} />,
+                  em: (props) => <em className="text-blue-300" {...props} />,
+                  blockquote: (props) => <blockquote className="border-l-4 border-blue-500 pl-6 my-6 text-gray-300 italic" {...props} />,
+                  code: ({inline, className, children, ...props}: any) => {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return !inline && match ? (
+                      <code className={`${className} block p-4 rounded-lg font-mono text-sm overflow-x-auto my-4`} {...props}>
+                        {children}
+                      </code>
+                    ) : (
+                      <code className="bg-slate-800 px-2 py-1 rounded text-blue-300 font-mono text-sm" {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  pre: (props) => <pre className="bg-slate-800/80 p-0 rounded-lg" {...props} />,
+                  ul: (props) => <ul className="list-disc pl-6 mb-6 space-y-2 text-gray-200" {...props} />,
+                  ol: (props) => <ol className="list-decimal pl-6 mb-6 space-y-2 text-gray-200" {...props} />,
+                  li: (props) => <li className="mb-1" {...props} />,
+                  img: (props) => <img className="rounded-lg shadow-lg my-6 max-w-full" {...props} />,
+                  hr: (props) => <hr className="border-gray-700 my-8" {...props} />,
+                  table: (props) => <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-700 my-6" {...props} /></div>,
+                  th: (props) => <th className="px-4 py-3 bg-gray-800 text-left text-sm font-medium text-gray-200 uppercase tracking-wider" {...props} />,
+                  td: (props) => <td className="px-4 py-3 bg-gray-900/50 text-sm" {...props} />
+                }}
+              >
+                {post.content}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
 
