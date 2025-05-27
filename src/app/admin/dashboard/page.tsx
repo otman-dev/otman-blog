@@ -495,22 +495,18 @@ const sidebarItems = [
       count: null 
     },
   ];
-
   // Show loading screen while checking authentication
   if (isAuthenticating) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-4 border-transparent bg-gradient-to-r from-blue-500 to-purple-500 p-1">
-            <div className="h-full w-full rounded-full bg-slate-900"></div>
+        <div className="relative flex flex-col items-center">
+          <div className="animate-spin rounded-full h-40 w-40 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mb-4">
+            <Image src="/logo.png" alt="Loading..." width={144} height={144} className="rounded-full" />
           </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 text-white animate-pulse">🔐</div>
+          <div className="text-center">
+            <div className="text-lg font-semibold text-white">Authenticating...</div>
+            <div className="text-sm text-gray-400">Verifying your credentials</div>
           </div>
-        </div>
-        <div className="ml-4 text-white">
-          <div className="text-lg font-semibold">Authenticating...</div>
-          <div className="text-sm text-gray-400">Verifying your credentials</div>
         </div>
       </div>
     );
@@ -806,7 +802,9 @@ const sidebarItems = [
               {isLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500/30 border-t-blue-500 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mx-auto mb-4">
+                      <Image src="/logo.png" alt="Loading..." width={64} height={64} className="rounded-full" />
+                    </div>
                     <p className="text-white font-medium">Loading your content...</p>
                     <p className="text-sm text-gray-400">Please wait while we fetch your posts</p>
                   </div>
@@ -1153,10 +1151,12 @@ const sidebarItems = [
                     </div>
                   </div>
                 )}
-                
-                {isLoading ? (
+                  {isLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>                    <span className="ml-3 text-gray-400">Loading categories...</span>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
+                      <Image src="/logo.png" alt="Loading..." width={32} height={32} className="rounded-full" />
+                    </div>
+                    <span className="text-gray-400">Loading categories...</span>
                   </div>
                 ) : categories.length > 0 ? (                  <div className="space-y-3">
                     {categories.map((category) => {
@@ -1352,11 +1352,12 @@ const sidebarItems = [
                     </div>
                   </div>
                 )}
-                
-                {isLoading ? (
+                  {isLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                    <span className="ml-3 text-gray-400">Loading tags...</span>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
+                      <Image src="/logo.png" alt="Loading..." width={32} height={32} className="rounded-full" />
+                    </div>
+                    <span className="text-gray-400">Loading tags...</span>
                   </div>
                 ) : tags.length > 0 ? (
                   <div className="space-y-3">

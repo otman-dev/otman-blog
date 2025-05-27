@@ -52,16 +52,14 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
     return matchesSearch && matchesCategory;
   });
 
-  const allCategories = Array.from(new Set(posts.flatMap(post => post.categories)));if (isLoading) {
+  const allCategories = Array.from(new Set(posts.flatMap(post => post.categories)));  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-32 w-32 border-4 border-transparent bg-gradient-to-r from-blue-500 to-purple-500 p-1">
-            <div className="h-full w-full rounded-full bg-slate-900"></div>
+        <div className="relative flex flex-col items-center">
+          <div className="animate-spin rounded-full h-40 w-40 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mb-4">
+            <Image src="/logo.png" alt="Loading..." width={144} height={144} className="rounded-full" />
           </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-white animate-pulse" />
-          </div>
+          <p className="text-white text-xl">Loading posts...</p>
         </div>
       </div>
     );
