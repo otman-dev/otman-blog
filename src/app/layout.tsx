@@ -25,11 +25,17 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "AtlanticDunes",
+    images: [
+      "https://enterprise-blog.vercel.app/logo.png"
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "AtlanticDunes - Enterprise Insights and Innovation",
     description: "Cutting-edge enterprise insights and industry innovations. Discover the future of business with expert analysis.",
+    images: [
+      "https://enterprise-blog.vercel.app/logo.png"
+    ]
   },
 };
 
