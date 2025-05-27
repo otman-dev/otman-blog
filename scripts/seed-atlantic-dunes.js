@@ -1,6 +1,8 @@
+require('dotenv').config({ path: '.env.local' });
 const { MongoClient } = require('mongodb');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/enterprise-blog';
+const DATABASE_NAME = process.env.DATABASE_NAME || 'enterprise-blog';
 
 const categories = [
   {
@@ -390,8 +392,9 @@ async function seedDatabase() {
   try {
     await client.connect();
     console.log('Connected to MongoDB');
+    console.log(`Using database: ${DATABASE_NAME}`);
     
-    const db = client.db();
+    const db = client.db(DATABASE_NAME);
     
     // Clear existing data
     console.log('Clearing existing data...');
