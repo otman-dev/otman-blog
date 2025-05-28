@@ -1,11 +1,11 @@
-# AtlanticDunes Enterprise Blog
+# Otman Blog
 
-A modern, responsive enterprise blog platform built with Next.js, MongoDB, and Tailwind CSS. Features a mobile-first design, admin dashboard, and professional AtlanticDunes branding.
+A modern, responsive personal blog platform built with Next.js, MongoDB, and Tailwind CSS. Features a mobile-first design, admin dashboard, and clean professional branding.
 
 ## 🚀 Features
 
 - **Mobile-First Design**: Optimized for all devices with responsive layouts
-- **AtlanticDunes Branding**: Professional enterprise design with integrated logo
+- **Personal Branding**: Professional design with integrated personal branding
 - **Admin Dashboard**: Secure admin panel for content management
 - **Blog Management**: Create, edit, and manage blog posts with rich text content
 - **Authentication**: Secure login system with session management
@@ -16,7 +16,7 @@ A modern, responsive enterprise blog platform built with Next.js, MongoDB, and T
 ## 🏗 Architecture
 
 - **Frontend**: Next.js 15 with App Router
-- **Styling**: Tailwind CSS with custom AtlanticDunes theme
+- **Styling**: Tailwind CSS with custom Mouhib Otman theme
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: iron-session for secure session management
 - **Deployment**: Vercel with custom configuration
@@ -68,7 +68,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the website.
 
 ```
 ├── public/
-│   ├── logo.png              # AtlanticDunes logo
+│   ├── LogoMouhibOtman.svg   # Mouhib Otman logo
 │   └── ...                   # Static assets
 ├── src/
 │   ├── app/
@@ -96,10 +96,10 @@ Default admin credentials:
 
 Access the admin panel at: `/admin/login`
 
-## 🎨 AtlanticDunes Design
+## 🎨 Mouhib Otman Design
 
 The platform features a professional blue-themed design with:
-- Custom AtlanticDunes logo integration
+- Custom Mouhib Otman logo integration
 - Enterprise-grade color scheme (blues and grays)
 - Modern, clean typography
 - Responsive mobile-first layout
@@ -136,9 +136,9 @@ The project is configured for Vercel deployment with `vercel.json`. Simply:
 
 ## 📊 Database Seeding
 
-### Atlantic Dunes Content Seeding
+### Mouhib Otman Content Seeding
 
-To populate your database with Atlantic Dunes content (categories, tags, and sample posts), run:
+To populate your database with Mouhib Otman content (categories, tags, and sample posts), run:
 
 ```bash
 npm run seed-atlantic-dunes
@@ -146,7 +146,7 @@ npm run seed-atlantic-dunes
 
 This script will:
 - **Clear existing data** (categories, tags, posts)
-- **Create 6 categories** based on Atlantic Dunes poles:
+- **Create 6 categories** based on Mouhib Otman's expertise areas:
   - Pôle Energie (Energy)
   - Pôle Air (Air Treatment)
   - Pôle Déchets (Waste Management)
@@ -182,4 +182,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**AtlanticDunes** - Enterprise insights and innovation
+**Mouhib Otman** - Personal insights and innovation

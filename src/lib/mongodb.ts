@@ -1,8 +1,8 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import { Post, Category, Tag, User, EmailSubscription } from './types';
 
-const MONGODB_URI = process.env.MONGODB_URI || '';
-const DB_NAME = process.env.DATABASE_NAME || 'enterprise_blog';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rasmus:wordpiss@adro.ddns.net:27017/';
+const DB_NAME = process.env.DATABASE_NAME || 'otman-blog';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');

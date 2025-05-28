@@ -501,7 +501,7 @@ const sidebarItems = [
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="relative flex flex-col items-center">
           <div className="animate-spin rounded-full h-40 w-40 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mb-4">
-            <Image src="/logo.png" alt="Loading..." width={144} height={144} className="rounded-full" />
+            <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={144} height={144} className="rounded-full" />
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-white">Authenticating...</div>
@@ -539,10 +539,9 @@ const sidebarItems = [
         <div className="relative h-24 px-6 flex items-center border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
           <div className="flex items-center space-x-4 w-full">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-2 shadow-2xl">
-                <Image
-                  src="/logo.png"
-                  alt="AtlanticDunes Logo"
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-2 shadow-2xl">                <Image
+                  src="/LogoMouhibOtman.svg"
+                  alt="Mouhib Otman Logo"
                   width={32}
                   height={32}
                   className="object-contain filter brightness-0 invert"
@@ -550,9 +549,8 @@ const sidebarItems = [
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white/20 animate-pulse"></div>
             </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                AtlanticDunes
+            <div className="flex-1">              <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Mouhib Otman
               </h1>
               <p className="text-xs text-gray-400 font-medium">Admin Console</p>
             </div>
@@ -638,9 +636,8 @@ const sidebarItems = [
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
             </div>
-            <div className="ml-3 flex-1">
-              <div className="text-sm font-semibold text-white">Admin User</div>
-              <div className="text-xs text-gray-400">admin@atlanticdunes.com</div>
+            <div className="ml-3 flex-1">              <div className="text-sm font-semibold text-white">Admin User</div>
+              <div className="text-xs text-gray-400">admin@mouhibotman.com</div>
             </div>
           </div>
           
@@ -803,7 +800,7 @@ const sidebarItems = [
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mx-auto mb-4">
-                      <Image src="/logo.png" alt="Loading..." width={64} height={64} className="rounded-full" />
+                      <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={64} height={64} className="rounded-full" />
                     </div>
                     <p className="text-white font-medium">Loading your content...</p>
                     <p className="text-sm text-gray-400">Please wait while we fetch your posts</p>
@@ -1153,9 +1150,8 @@ const sidebarItems = [
                   </div>
                 )}
                   {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
-                      <Image src="/logo.png" alt="Loading..." width={32} height={32} className="rounded-full" />
+                  <div className="flex items-center justify-center py-8">                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
+                      <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={32} height={32} className="rounded-full" />
                     </div>
                     <span className="text-gray-400">Loading categories...</span>
                   </div>
@@ -1354,9 +1350,8 @@ const sidebarItems = [
                   </div>
                 )}
                   {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
-                      <Image src="/logo.png" alt="Loading..." width={32} height={32} className="rounded-full" />
+                  <div className="flex items-center justify-center py-8">                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mr-3">
+                      <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={32} height={32} className="rounded-full" />
                     </div>
                     <span className="text-gray-400">Loading tags...</span>
                   </div>
@@ -1486,13 +1481,12 @@ const sidebarItems = [
                     Site Settings
                   </h3>
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Site Title</label>
+                    <div>                      <label className="block text-sm font-medium text-gray-300 mb-2">Site Title</label>
                       <input 
                         type="text" 
-                        value="AtlanticDunes" 
+                        value="Mouhib Otman" 
                         className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white backdrop-blur-xl"
-                        readOnly 
+                        readOnly
                       />
                     </div>
                     <div>

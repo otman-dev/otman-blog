@@ -69,21 +69,19 @@ export default function ComingSoon() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full mx-auto text-center">
         {/* Logo/Brand */}
-        <div className="mb-8">
-          <div className="w-20 h-20 mx-auto mb-6 relative">
+        <div className="mb-8">          <div className="w-20 h-20 mx-auto mb-6 relative">
             <Image
-              src="/logo.png"
-              alt="AtlanticDunes Logo"
+              src="/LogoMouhibOtman.svg"
+              alt="Mouhib Otman Logo"
               width={80}
               height={80}
               className="object-contain"
             />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            AtlanticDunes
+          </div>          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Mouhib Otman
           </h1>
           <p className="text-gray-300 text-sm sm:text-base">
-            Enterprise insights and innovation
+            Personal insights and innovation
           </p>
         </div>
 

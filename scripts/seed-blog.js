@@ -1,8 +1,8 @@
 require('dotenv').config({ path: '.env.local' });
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/enterprise-blog';
-const DATABASE_NAME = process.env.DATABASE_NAME || 'enterprise-blog';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rasmus:wordpiss@adro.ddns.net:27017/';
+const DATABASE_NAME = process.env.DATABASE_NAME || 'otman-blog';
 
 const categories = [
   {

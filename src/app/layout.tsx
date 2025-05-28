@@ -13,28 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AtlanticDunes - Enterprise Insights and Innovation",
-  description: "AtlanticDunes brings you cutting-edge enterprise insights, industry innovations, and strategic thought leadership. Discover the future of business with our expert analysis and forward-thinking perspectives.",
-  keywords: "AtlanticDunes, enterprise, innovation, business insights, industry analysis, thought leadership, strategy, technology, business intelligence",
-  authors: [{ name: "AtlanticDunes Team" }],
+  title: "Otman - Personal Insights and Innovation",
+  description: "Otman brings you personal insights, innovations, and thought leadership. Discover perspectives on technology and more with forward-thinking perspectives.",
+  keywords: "Otman, personal blog, innovation, technology, insights, thought leadership, programming, development",
+  authors: [{ name: "Otman" }],
   viewport: "width=device-width, initial-scale=1",
-  robots: "index, follow",
-  openGraph: {
-    title: "AtlanticDunes - Enterprise Insights and Innovation",
-    description: "Cutting-edge enterprise insights and industry innovations. Discover the future of business with expert analysis and forward-thinking perspectives.",
+  robots: "index, follow",  openGraph: {
+    title: "Otman - Personal Insights and Innovation",
+    description: "Personal insights and innovations. Discover perspectives on technology with forward-thinking ideas.",
     type: "website",
     locale: "en_US",
-    siteName: "AtlanticDunes",
+    siteName: "Mouhib Otman",
     images: [
-      "https://enterprise-blog.vercel.app/logo.png"
+      "https://enterprise-blog.vercel.app/LogoMouhibOtman.svg"
     ]
-  },
-  twitter: {
+  },  twitter: {
     card: "summary_large_image",
-    title: "AtlanticDunes - Enterprise Insights and Innovation",
-    description: "Cutting-edge enterprise insights and industry innovations. Discover the future of business with expert analysis.",
+    title: "Mouhib Otman - Personal Insights and Innovation",
+    description: "Personal insights and innovations. Discover perspectives on technology with forward-thinking ideas.",
     images: [
-      "https://enterprise-blog.vercel.app/logo.png"
+      "https://enterprise-blog.vercel.app/LogoMouhibOtman.svg"
     ]
   },
 };

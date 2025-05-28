@@ -1,14 +1,20 @@
 {
-  "name": "enterprise-blog",
+  "name": "otman-blog",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
+  "private": true,  "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "create-admin": "node scripts/create-admin.js",
-    "seed-atlantic-dunes": "node scripts/seed-atlantic-dunes.js"
+    "check-db": "node scripts/check-database.js",
+    "seed-all": "node scripts/seed-all-collections.js",
+    "seed-users": "node scripts/seed-users.js",
+    "seed-categories": "node scripts/seed-categories.js",
+    "seed-tags": "node scripts/seed-tags.js",
+    "seed-posts": "node scripts/seed-posts.js",
+    "seed-email-subscriptions": "node scripts/seed-email-subscriptions.js",
+    "debug-db": "node scripts/debug-db.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",

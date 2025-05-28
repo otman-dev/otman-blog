@@ -1,33 +1,56 @@
 require('dotenv').config({ path: '.env.local' });
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/enterprise-blog';
-const DATABASE_NAME = process.env.DATABASE_NAME || 'enterprise-blog';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rasmus:wordpiss@adro.ddns.net:27017/';
+const DATABASE_NAME = process.env.DATABASE_NAME || 'otman-blog';
 
 async function debugDatabase() {
   const client = new MongoClient(MONGODB_URI);
   
   try {
-    await client.connect();
-    console.log('Connected to MongoDB');
-    console.log('MONGODB_URI:', MONGODB_URI);
+    console.log('\n=== MongoDB CONNECTION DETAILS ===');
+    console.log('MONGODB_URI from env:', MONGODB_URI);
     console.log('DATABASE_NAME from env:', DATABASE_NAME);
+    console.log('Connection string to use in MongoDB Compass:');
+    console.log(MONGODB_URI);
+    
+    await client.connect();
+    console.log('\n✓ Successfully connected to MongoDB');
+    
+    // Get server information
+    const adminDb = client.db('admin');
+    try {
+      const serverInfo = await adminDb.command({ serverStatus: 1 });
+      console.log('\n=== SERVER INFORMATION ===');
+      console.log('MongoDB Version:', serverInfo.version);
+      console.log('Host:', serverInfo.host);
+    } catch (error) {
+      console.log('Could not retrieve server status:', error.message);
+    }
     
     // List all databases
-    const adminDb = client.db().admin();
-    const dbs = await adminDb.listDatabases();
-    console.log('\nAvailable databases:');
-    dbs.databases.forEach(db => console.log(`  - ${db.name}`));
+    const dbs = await adminDb.admin().listDatabases();
+    console.log('\n=== AVAILABLE DATABASES ===');
+    dbs.databases.forEach(db => console.log(`  - ${db.name} (${(db.sizeOnDisk / (1024 * 1024)).toFixed(2)} MB)`));
     
-    // Check the specific database
-    const db = client.db(DATABASE_NAME);
-    console.log(`\nChecking database: ${DATABASE_NAME}`);
+    // Check if our database exists
+    const dbExists = dbs.databases.some(db => db.name === DATABASE_NAME);
+    console.log(`\nDatabase "${DATABASE_NAME}" exists: ${dbExists ? 'YES ✓' : 'NO ✗'}`);
     
-    const collections = await db.listCollections().toArray();
-    console.log('Collections in database:');
-    collections.forEach(col => console.log(`  - ${col.name}`));
-    
-    // Check collection counts
+    if (dbExists) {
+      // Check the specific database
+      const db = client.db(DATABASE_NAME);
+      console.log(`\n=== EXAMINING DATABASE: ${DATABASE_NAME} ===`);
+      
+      const collections = await db.listCollections().toArray();
+      console.log('Collections in database:');
+      
+      // Print collections and count documents
+      for (const collection of collections) {
+        const count = await db.collection(collection.name).countDocuments();
+        console.log(`  - ${collection.name} (${count} documents)`);
+      }
+    }
     for (const collection of ['categories', 'tags', 'posts']) {
       try {
         const count = await db.collection(collection).countDocuments();

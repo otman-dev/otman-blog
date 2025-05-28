@@ -2,8 +2,8 @@ import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://rasmus:wordpiss@adro.ddns.net:27017';
-const DATABASE_NAME = process.env.DATABASE_NAME || 'enterprise_blog';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/otman-blog';
+const DATABASE_NAME = process.env.DATABASE_NAME || 'otman-blog';
 
 async function createDefaultAdmin() {
   const client = new MongoClient(MONGODB_URI);

@@ -78,7 +78,7 @@ export default function BlogPostPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="relative flex flex-col items-center">
           <div className="animate-spin rounded-full h-40 w-40 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mb-4">
-            <Image src="/logo.png" alt="Loading..." width={144} height={144} className="rounded-full" />
+            <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={144} height={144} className="rounded-full" />
           </div>
           <p className="text-white text-xl">Loading post...</p>
         </div>
@@ -142,10 +142,9 @@ export default function BlogPostPage() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-2 shadow-2xl">
-                    <Image
-                      src="/logo.png"
-                      alt="AtlanticDunes Logo"
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-2 shadow-2xl">                    <Image
+                      src="/LogoMouhibOtman.svg"
+                      alt="Mouhib Otman Logo"
                       width={32}
                       height={32}
                       className="object-contain filter brightness-0 invert"
@@ -154,10 +153,9 @@ export default function BlogPostPage() {
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
                     <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
                   </div>
-                </div>
-                <div className="hidden sm:block">
-                  <div className="text-sm font-medium text-white">AtlanticDunes</div>
-                  <div className="text-xs text-gray-400">Enterprise Blog</div>
+                </div>                <div className="hidden sm:block">
+                  <div className="text-sm font-medium text-white">Mouhib Otman</div>
+                  <div className="text-xs text-gray-400">Personal Blog</div>
                 </div>
               </div>
               <button

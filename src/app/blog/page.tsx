@@ -57,7 +57,7 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="relative flex flex-col items-center">
           <div className="animate-spin rounded-full h-40 w-40 border-4 border-transparent border-t-blue-500 border-r-purple-500 p-1 mb-4">
-            <Image src="/logo.png" alt="Loading..." width={144} height={144} className="rounded-full" />
+            <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={144} height={144} className="rounded-full" />
           </div>
           <p className="text-white text-xl">Loading posts...</p>
         </div>
@@ -79,10 +79,9 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-3 shadow-2xl">
-                  <Image
-                    src="/logo.png"
-                    alt="AtlanticDunes Logo"
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-3 shadow-2xl">                  <Image
+                    src="/LogoMouhibOtman.svg"
+                    alt="Mouhib Otman Logo"
                     width={40}
                     height={40}
                     className="object-contain filter brightness-0 invert"
@@ -92,11 +91,10 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 </div>
               </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  AtlanticDunes
+              <div>                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Mouhib Otman
                 </h1>
-                <p className="mt-1 text-gray-400 text-sm sm:text-base">Enterprise insights and innovation</p>
+                <p className="mt-1 text-gray-400 text-sm sm:text-base">Personal insights and innovation</p>
               </div>
             </div>
             <div className="mt-4 sm:mt-0 flex items-center space-x-4">
@@ -273,9 +271,8 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
       {/* Footer */}
       <footer className="relative z-10 mt-16 bg-white/5 backdrop-blur-xl border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p className="text-gray-400">
-              © 2025 AtlanticDunes. Crafted with excellence for enterprise innovation.
+          <div className="text-center">            <p className="text-gray-400">
+              © 2025 Mouhib Otman. Crafted with passion for personal innovation.
             </p>
           </div>
         </div>

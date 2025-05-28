@@ -48,16 +48,14 @@ export default function AdminLogin() {
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 relative">
-              <Image
-                src="/logo.png"
-                alt="AtlanticDunes Logo"
+            <div className="w-16 h-16 mx-auto mb-4 relative">              <Image
+                src="/LogoMouhibOtman.svg"
+                alt="Mouhib Otman Logo"
                 width={64}
                 height={64}
                 className="object-contain"
-              />            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Admin Login</h1>
-            <p className="text-gray-300 text-sm">AtlanticDunes Dashboard Access</p>
+              />            </div>            <h1 className="text-2xl font-bold text-white mb-2">Admin Login</h1>
+            <p className="text-gray-300 text-sm">Mouhib Otman Dashboard Access</p>
           </div>
 
           {/* Error Message */}
