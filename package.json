@@ -14,7 +14,8 @@
     "seed-tags": "node scripts/seed-tags.js",
     "seed-posts": "node scripts/seed-posts.js",
     "seed-email-subscriptions": "node scripts/seed-email-subscriptions.js",
-    "debug-db": "node scripts/debug-db.js"
+    "debug-db": "node scripts/debug-db.js",
+    "debug-mongoose": "node scripts/debug-mongoose.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -24,6 +25,7 @@
     "iron-session": "^8.0.4",
     "lucide-react": "^0.511.0",
     "mongodb": "^6.16.0",
+    "mongoose": "^8.15.1",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
