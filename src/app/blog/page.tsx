@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Calendar, User, Clock, ArrowRight, Search, FolderOpen, Home, Filter, Grid, Sparkles, TrendingUp } from 'lucide-react';
+import { Calendar, User, Clock, ArrowRight, Search, FolderOpen, Home, Filter, Grid, Sparkles, TrendingUp, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -17,10 +17,13 @@ interface BlogPost {
   published: boolean;
 }
 
-export default function BlogPage() {  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function BlogPage() {  
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6; // Show 6 posts per page (3x2 grid on desktop, 1 column on mobile)
 
   useEffect(() => {
     fetchPosts();
@@ -44,7 +47,6 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
       setIsLoading(false);
     }
   };
-
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
@@ -52,7 +54,130 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
     return matchesSearch && matchesCategory;
   });
 
-  const allCategories = Array.from(new Set(posts.flatMap(post => post.categories)));  if (isLoading) {
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const currentPosts = filteredPosts.slice(startIndex, endIndex);
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  const allCategories = Array.from(new Set(posts.flatMap(post => post.categories)));
+
+  // Pagination component
+  const PaginationComponent = () => {
+    if (totalPages <= 1) return null;
+
+    const getVisiblePages = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (let i = Math.max(2, currentPage - delta); 
+           i <= Math.min(totalPages - 1, currentPage + delta); 
+           i++) {
+        range.push(i);
+      }
+
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, '...');
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push('...', totalPages);
+      } else {
+        rangeWithDots.push(totalPages);
+      }
+
+      return rangeWithDots;
+    };
+
+    const visiblePages = getVisiblePages();
+
+    return (
+      <div className="flex flex-col items-center space-y-4 mt-12">
+        {/* Mobile pagination - simplified */}
+        <div className="flex md:hidden items-center justify-between w-full max-w-sm">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-all duration-200"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+          
+          <div className="flex items-center space-x-2 text-sm text-gray-300">
+            <span>Page</span>
+            <span className="px-3 py-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg font-semibold text-white">
+              {currentPage}
+            </span>
+            <span>of {totalPages}</span>
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-all duration-200"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+
+        {/* Desktop pagination - full controls */}
+        <div className="hidden md:flex items-center justify-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-all duration-200"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </button>
+
+          <div className="flex items-center space-x-1">
+            {visiblePages.map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === 'number' ? setCurrentPage(page) : null}
+                disabled={typeof page !== 'number'}
+                className={`px-4 py-2 text-sm font-medium rounded-xl backdrop-blur-xl transition-all duration-200 ${
+                  page === currentPage
+                    ? 'bg-gradient-to-r from-blue-500/80 to-purple-500/80 text-white border border-blue-400/50 shadow-lg'
+                    : typeof page === 'number'
+                    ? 'text-gray-300 bg-white/10 border border-white/20 hover:bg-white/20 hover:text-white'
+                    : 'text-gray-500 cursor-default'
+                }`}
+              >
+                {typeof page === 'number' ? page : <MoreHorizontal className="w-4 h-4" />}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-all duration-200"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </button>
+        </div>
+
+        {/* Results info */}
+        <div className="text-sm text-gray-400 text-center">
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredPosts.length)} of {filteredPosts.length} articles
+        </div>
+      </div>
+    );
+  };if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="relative flex flex-col items-center">
@@ -159,16 +284,15 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Posts Grid */}
+        </div>        {/* Posts Grid */}
         {filteredPosts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-12 max-w-md mx-auto">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center backdrop-blur-xl border border-white/10">
                 <Sparkles className="w-10 h-10 text-purple-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">No articles found</h3>              <p className="text-gray-400 mb-6">
+              <h3 className="text-2xl font-bold text-white mb-4">No articles found</h3>              
+              <p className="text-gray-400 mb-6">
                 {searchTerm || selectedCategory 
                   ? 'Try adjusting your search criteria to discover more content.' 
                   : 'Check back soon for fresh insights and perspectives.'}
@@ -187,84 +311,91 @@ export default function BlogPage() {  const [posts, setPosts] = useState<BlogPos
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredPosts.map((post, index) => (
-              <article
-                key={post._id}
-                className="group bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:bg-white/15 hover:scale-105 transition-all duration-500 hover:shadow-2xl"
-                style={{
-                  animationDelay: `${index * 100}ms`
-                }}
-              >
-                <div className="p-8">
-                  {/* Article Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">{post.author}</div>
-                        <div className="flex items-center text-xs text-gray-400">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(post.publishedAt).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {currentPosts.map((post, index) => (
+                <article
+                  key={post._id}
+                  className="group bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:bg-white/15 hover:scale-105 transition-all duration-500 hover:shadow-2xl"
+                  style={{
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
+                  <div className="p-8">
+                    {/* Article Header */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-white">{post.author}</div>
+                          <div className="flex items-center text-xs text-gray-400">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(post.publishedAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2 text-xs text-gray-400">
-                      <Clock className="w-3 h-3" />
-                      <span>{post.readingTime} min</span>
-                    </div>
-                  </div>
-
-                  {/* Article Content */}
-                  <h2 className="text-xl font-bold text-white mb-4 line-clamp-2 group-hover:text-blue-300 transition-colors duration-300">
-                    {post.title}
-                  </h2>
-
-                  <p className="text-gray-300 mb-6 line-clamp-3 leading-relaxed">
-                    {post.excerpt}
-                  </p>                  {/* Categories */}
-                  {post.categories.length > 0 && (
-                    <div className="mb-6">
-                      <div className="flex flex-wrap gap-2">
-                        {post.categories.slice(0, 3).map((category) => (
-                          <span
-                            key={category}
-                            className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 rounded-full border border-blue-500/30 backdrop-blur-xl"
-                          >
-                            <FolderOpen className="w-3 h-3 mr-1" />
-                            {category}
-                          </span>
-                        ))}
-                        {post.categories.length > 3 && (
-                          <span className="text-xs text-gray-400 px-2 py-1">
-                            +{post.categories.length - 3} more
-                          </span>
-                        )}
+                      <div className="flex items-center space-x-2 text-xs text-gray-400">
+                        <Clock className="w-3 h-3" />
+                        <span>{post.readingTime} min</span>
                       </div>
                     </div>
-                  )}
 
-                  {/* Read More Button */}
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="inline-flex items-center text-blue-400 hover:text-white font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
-                  >
-                    <span>Read full article</span>
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Link>
-                </div>
+                    {/* Article Content */}
+                    <h2 className="text-xl font-bold text-white mb-4 line-clamp-2 group-hover:text-blue-300 transition-colors duration-300">
+                      {post.title}
+                    </h2>
 
-                {/* Hover Effect Border */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 transition-all duration-500 pointer-events-none"></div>
-              </article>
-            ))}
-          </div>
+                    <p className="text-gray-300 mb-6 line-clamp-3 leading-relaxed">
+                      {post.excerpt}
+                    </p>                  
+                    
+                    {/* Categories */}
+                    {post.categories.length > 0 && (
+                      <div className="mb-6">
+                        <div className="flex flex-wrap gap-2">
+                          {post.categories.slice(0, 3).map((category) => (
+                            <span
+                              key={category}
+                              className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 rounded-full border border-blue-500/30 backdrop-blur-xl"
+                            >
+                              <FolderOpen className="w-3 h-3 mr-1" />
+                              {category}
+                            </span>
+                          ))}
+                          {post.categories.length > 3 && (
+                            <span className="text-xs text-gray-400 px-2 py-1">
+                              +{post.categories.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Read More Button */}
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="inline-flex items-center text-blue-400 hover:text-white font-medium text-sm group-hover:translate-x-2 transition-all duration-300"
+                    >
+                      <span>Read full article</span>
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    </Link>
+                  </div>
+
+                  {/* Hover Effect Border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 transition-all duration-500 pointer-events-none"></div>
+                </article>
+              ))}
+            </div>
+            
+            {/* Pagination Component */}
+            <PaginationComponent />
+          </>
         )}
       </div>
 
