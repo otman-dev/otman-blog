@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Calendar, User, Clock, ArrowRight, Search, FolderOpen, Home, Filter, Grid, Sparkles, TrendingUp, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { Calendar, User, Clock, ArrowRight, Search, FolderOpen, Home, Filter, Grid, Sparkles, TrendingUp, ChevronLeft, ChevronRight, MoreHorizontal, Tag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -13,6 +13,7 @@ interface BlogPost {
   publishedAt: string;
   slug: string;
   categories: string[];
+  tags: string[];
   readingTime: number;
   published: boolean;
 }
@@ -22,6 +23,7 @@ export default function BlogPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Show 6 posts per page (3x2 grid on desktop, 1 column on mobile)
 
@@ -33,10 +35,11 @@ export default function BlogPage() {
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched posts:', data); // Debug log
-        // Filter to only show published posts and transform tags to categories
+        // Filter to only show published posts and keep both categories and tags
         const publishedPosts = data.filter((post: any) => post.published).map((post: any) => ({
           ...post,
-          categories: post.tags || [] // Transform tags to categories for display
+          categories: post.categories || [],
+          tags: post.tags || []
         }));
         setPosts(publishedPosts);
         console.log('Published posts displayed:', publishedPosts); // Debug log
@@ -46,12 +49,12 @@ export default function BlogPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-  const filteredPosts = posts.filter(post => {
+  };  const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || post.categories.includes(selectedCategory);
-    return matchesSearch && matchesCategory;
+    const matchesTag = !selectedTag || post.tags.includes(selectedTag);
+    return matchesSearch && matchesCategory && matchesTag;
   });
 
   // Pagination calculations
@@ -62,9 +65,10 @@ export default function BlogPage() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, selectedTag]);
 
   const allCategories = Array.from(new Set(posts.flatMap(post => post.categories)));
+  const allTags = Array.from(new Set(posts.flatMap(post => post.tags)));
 
   // Pagination component
   const PaginationComponent = () => {
@@ -302,13 +306,13 @@ export default function BlogPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white placeholder-gray-400 backdrop-blur-xl transition-all duration-200"
                 />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">                <div className="relative">
+              </div>              <div className="flex flex-col sm:flex-row gap-4">                
+                <div className="relative">
                   <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="pl-10 pr-8 py-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white backdrop-blur-xl min-w-48"
+                    className="pl-10 pr-8 py-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white backdrop-blur-xl w-48"
                   >
                     <option value="" className="bg-gray-800">All Categories</option>
                     {allCategories.map(category => (
@@ -316,9 +320,29 @@ export default function BlogPage() {
                     ))}
                   </select>
                 </div>
-                <button className="flex items-center px-6 py-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white rounded-xl hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200 border border-white/20 backdrop-blur-xl group">
+                <div className="relative">
+                  <FolderOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <select
+                    value={selectedTag}
+                    onChange={(e) => setSelectedTag(e.target.value)}
+                    className="pl-10 pr-8 py-4 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-white backdrop-blur-xl w-48"
+                  >
+                    <option value="" className="bg-gray-800">All Tags</option>
+                    {allTags.map(tag => (
+                      <option key={tag} value={tag} className="bg-gray-800">{tag}</option>
+                    ))}
+                  </select>
+                </div>
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('');
+                    setSelectedTag('');
+                  }}
+                  className="flex items-center px-6 py-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white rounded-xl hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-200 border border-white/20 backdrop-blur-xl group"
+                >
                   <Grid className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                  View All
+                  Clear All
                 </button>
               </div>
             </div>
@@ -330,17 +354,17 @@ export default function BlogPage() {
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center backdrop-blur-xl border border-white/10">
                 <Sparkles className="w-10 h-10 text-purple-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">No articles found</h3>              
-              <p className="text-gray-400 mb-6">
-                {searchTerm || selectedCategory 
+              <h3 className="text-2xl font-bold text-white mb-4">No articles found</h3>                <p className="text-gray-400 mb-6">
+                {searchTerm || selectedCategory || selectedTag
                   ? 'Try adjusting your search criteria to discover more content.' 
                   : 'Check back soon for fresh insights and perspectives.'}
               </p>
-              {(searchTerm || selectedCategory) && (
+              {(searchTerm || selectedCategory || selectedTag) && (
                 <button
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedCategory('');
+                    setSelectedTag('');
                   }}
                   className="px-6 py-3 bg-gradient-to-r from-blue-500/80 to-purple-500/80 text-white rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                 >
@@ -388,33 +412,56 @@ export default function BlogPage() {
                     {/* Article Content */}
                     <h2 className="text-xl font-bold text-white mb-4 line-clamp-2 group-hover:text-blue-300 transition-colors duration-300">
                       {post.title}
-                    </h2>
-
-                    <p className="text-gray-300 mb-6 line-clamp-3 leading-relaxed">
+                    </h2>                    <p className="text-gray-300 mb-6 line-clamp-3 leading-relaxed">
                       {post.excerpt}
                     </p>                  
                     
-                    {/* Categories */}
-                    {post.categories.length > 0 && (
-                      <div className="mb-6">
-                        <div className="flex flex-wrap gap-2">
-                          {post.categories.slice(0, 3).map((category) => (
-                            <span
-                              key={category}
-                              className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 rounded-full border border-blue-500/30 backdrop-blur-xl"
-                            >
-                              <FolderOpen className="w-3 h-3 mr-1" />
-                              {category}
-                            </span>
-                          ))}
-                          {post.categories.length > 3 && (
-                            <span className="text-xs text-gray-400 px-2 py-1">
-                              +{post.categories.length - 3} more
-                            </span>
-                          )}
+                    {/* Categories and Tags */}
+                    <div className="mb-6 space-y-3">
+                      {/* Categories */}
+                      {post.categories.length > 0 && (
+                        <div>
+                          <div className="flex flex-wrap gap-2">
+                            {post.categories.slice(0, 2).map((category) => (
+                              <span
+                                key={category}
+                                className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 rounded-full border border-blue-500/30 backdrop-blur-xl"
+                              >
+                                <FolderOpen className="w-3 h-3 mr-1" />
+                                {category}
+                              </span>
+                            ))}
+                            {post.categories.length > 2 && (
+                              <span className="text-xs text-gray-400 px-2 py-1">
+                                +{post.categories.length - 2} categories
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      
+                      {/* Tags */}
+                      {post.tags.length > 0 && (
+                        <div>
+                          <div className="flex flex-wrap gap-2">
+                            {post.tags.slice(0, 3).map((tag) => (
+                              <span
+                                key={tag}
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 rounded-md border border-green-500/30 backdrop-blur-xl"
+                              >
+                                <Tag className="w-3 h-3 mr-1" />
+                                {tag}
+                              </span>
+                            ))}
+                            {post.tags.length > 3 && (
+                              <span className="text-xs text-gray-400 px-2 py-1">
+                                +{post.tags.length - 3} tags
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Read More Button */}
                     <Link
