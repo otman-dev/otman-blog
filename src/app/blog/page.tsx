@@ -239,15 +239,54 @@ export default function BlogPage() {
         </div>
       </header>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
-            Discover Insights
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">        {/* Hero Section */}
+        <div className="text-center mb-12">          <div className="mb-6">
+            <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium backdrop-blur-xl">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Tech Stories • Insights • Perspectives
+            </span>
+          </div>
+          <h2 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6 leading-tight">
+            Let's Code, Create & Grow
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Explore our latest thoughts on technology, innovation, and enterprise solutions
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Hey there! 👋 I'm <span className="text-blue-300 font-medium">Mouhib Otman</span>, and I love sharing my journey through the tech world. 
+            <br className="hidden sm:block" />
+            From <span className="text-green-300 font-medium">late-night debugging stories</span> to 
+            <span className="text-purple-300 font-medium"> industry insights</span>, 
+            <span className="text-pink-300 font-medium"> personal viewpoints</span>, and yes - some tutorials too! 
+            <br className="hidden sm:block" />
+            This is where I share what I've learned, what I think, and the experiences that shaped my perspective on technology.
           </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-6">
+            <Link
+              href="/"
+              className="group flex items-center px-6 py-3 bg-gradient-to-r from-blue-500/80 to-purple-500/80 text-white rounded-xl hover:from-blue-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
+            >
+              <User className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+              View My Portfolio
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <div className="text-sm text-gray-400">
+              Want to see what I've built? Check out my work! 
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-400">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+              Fresh content weekly
+            </div>
+            <div className="hidden sm:block w-1 h-1 bg-gray-600 rounded-full"></div>
+            <div className="flex items-center">
+              <TrendingUp className="w-4 h-4 mr-2 text-blue-400" />
+              {posts.length}+ articles and counting
+            </div>
+            <div className="hidden sm:block w-1 h-1 bg-gray-600 rounded-full"></div>
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-2 text-purple-400" />
+              Personal experiences shared
+            </div>
+          </div>
         </div>
 
         {/* Enhanced Search and Filters */}
