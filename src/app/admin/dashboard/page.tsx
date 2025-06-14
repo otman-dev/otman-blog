@@ -68,7 +68,22 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');const [user, setUser] = useState<User | null>(null);  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('posts');
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(5);
+  const [searchQuery, setSearchQuery] = useState('');
+  // Categories pagination state
+  const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
+  const [categoriesPerPage] = useState(5);
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+
+  // Tags pagination state
+  const [currentTagPage, setCurrentTagPage] = useState(1);
+  const [tagsPerPage] = useState(5);
+  const [tagSearchQuery, setTagSearchQuery] = useState('');
+
+  const [user, setUser] = useState<User | null>(null);  const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
@@ -248,8 +263,90 @@ export default function AdminDashboard() {  const [posts, setPosts] = useState<B
       console.error('Logout error:', error);
       // Force redirect for security
       window.location.href = '/admin/login';
-    }
+    }  };
+
+  // Pagination and filtering functions
+  const filteredPosts = posts.filter(post => 
+    searchQuery === '' || 
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.author.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const currentPosts = filteredPosts.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+  // Reset current page when posts change
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [posts, currentPage, totalPages]);
+
+  // Categories pagination and filtering functions
+  const filteredCategories = categories.filter(category => 
+    categorySearchQuery === '' || 
+    category.name.toLowerCase().includes(categorySearchQuery.toLowerCase()) ||
+    category.description?.toLowerCase().includes(categorySearchQuery.toLowerCase())
+  );
+
+  const totalCategoryPages = Math.ceil(filteredCategories.length / categoriesPerPage);
+  const categoryStartIndex = (currentCategoryPage - 1) * categoriesPerPage;
+  const categoryEndIndex = categoryStartIndex + categoriesPerPage;
+  const currentCategories = filteredCategories.slice(categoryStartIndex, categoryEndIndex);
+
+  const handleCategoryPageChange = (page: number) => {
+    setCurrentCategoryPage(page);
+  };
+
+  const handleCategorySearchChange = (query: string) => {
+    setCategorySearchQuery(query);
+    setCurrentCategoryPage(1); // Reset to first page when searching
+  };
+  // Reset current category page when categories change
+  useEffect(() => {
+    if (currentCategoryPage > totalCategoryPages && totalCategoryPages > 0) {
+      setCurrentCategoryPage(1);
+    }
+  }, [categories, currentCategoryPage, totalCategoryPages]);
+
+  // Tags pagination and filtering functions
+  const filteredTags = tags.filter(tag => 
+    tagSearchQuery === '' || 
+    tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase()) ||
+    tag.description?.toLowerCase().includes(tagSearchQuery.toLowerCase())
+  );
+
+  const totalTagPages = Math.ceil(filteredTags.length / tagsPerPage);
+  const tagStartIndex = (currentTagPage - 1) * tagsPerPage;
+  const tagEndIndex = tagStartIndex + tagsPerPage;
+  const currentTags = filteredTags.slice(tagStartIndex, tagEndIndex);
+
+  const handleTagPageChange = (page: number) => {
+    setCurrentTagPage(page);
+  };
+
+  const handleTagSearchChange = (query: string) => {
+    setTagSearchQuery(query);
+    setCurrentTagPage(1); // Reset to first page when searching
+  };
+
+  // Reset current tag page when tags change
+  useEffect(() => {
+    if (currentTagPage > totalTagPages && totalTagPages > 0) {
+      setCurrentTagPage(1);
+    }
+  }, [tags, currentTagPage, totalTagPages]);
 
   const deletePost = async (id: string) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
@@ -782,6 +879,8 @@ const sidebarItems = [
                         type="text"
                         placeholder="Search posts..."
                         className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 text-sm text-white placeholder-gray-400 backdrop-blur-xl"
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                       />
                     </div>
                     <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all">
@@ -820,8 +919,7 @@ const sidebarItems = [
                     <PlusCircle className="w-5 h-5 mr-2" />
                     Create Your First Post
                   </button>
-                </div>
-              ) : (
+                </div>              ) : (
                 <div className="overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full">
@@ -832,16 +930,16 @@ const sidebarItems = [
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Status
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          </th>                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Published
-                          </th>                          <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          </th>
+                          <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/10">
-                        {posts.map((post) => (
+                        {currentPosts.map((post) => (
                           <tr key={post._id} className="group hover:bg-white/10 transition-all duration-200">
                             <td className="px-6 py-5">
                               <div className="flex items-start">
@@ -904,10 +1002,179 @@ const sidebarItems = [
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
+                        ))}                      </tbody>
                     </table>
                   </div>
+                  
+                  {/* Mobile-First Pagination Component */}
+                  {filteredPosts.length > 0 && totalPages > 1 && (
+                    <div className="px-4 py-4 border-t border-white/20 sm:px-6">
+                      {/* Mobile View - Simple Page Counter */}
+                      <div className="flex flex-col space-y-4 sm:hidden">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-400">
+                            {startIndex + 1}-{Math.min(endIndex, filteredPosts.length)} of {filteredPosts.length}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            Page {currentPage} of {totalPages}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center space-x-2">
+                          <button
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
+                            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="First page"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="Previous page"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <div className="flex items-center px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                            <span className="text-sm font-medium text-white">{currentPage}</span>
+                          </div>
+                          <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="Next page"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="Last page"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Desktop View - Full Pagination */}
+                      <div className="hidden sm:flex sm:flex-col sm:space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
+                        <div className="text-sm text-gray-400">
+                          Showing {startIndex + 1} to {Math.min(endIndex, filteredPosts.length)} of {filteredPosts.length} posts
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
+                            className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                          >
+                            First
+                          </button>
+                          <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="Previous page"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+
+                          {/* Page numbers */}
+                          <div className="flex items-center space-x-1">
+                            {/* First page */}
+                            {currentPage > 3 && (
+                              <>
+                                <button
+                                  onClick={() => handlePageChange(1)}
+                                  className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                                >
+                                  1
+                                </button>
+                                {currentPage > 4 && (
+                                  <span className="px-2 text-gray-400">...</span>
+                                )}
+                              </>
+                            )}
+
+                            {/* Current page and surrounding pages */}
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                              } else {
+                                pageNum = currentPage - 2 + i;
+                              }
+
+                              if (pageNum < 1 || pageNum > totalPages) return null;
+
+                              return (
+                                <button
+                                  key={pageNum}
+                                  onClick={() => handlePageChange(pageNum)}
+                                  className={`px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+                                    pageNum === currentPage
+                                      ? 'text-white bg-blue-500/20 border border-blue-500/30'
+                                      : 'text-gray-400 hover:text-white hover:bg-white/10'
+                                  }`}
+                                >
+                                  {pageNum}
+                                </button>
+                              );
+                            })}
+
+                            {/* Last page */}
+                            {currentPage < totalPages - 2 && (
+                              <>
+                                {currentPage < totalPages - 3 && (
+                                  <span className="px-2 text-gray-400">...</span>
+                                )}
+                                <button
+                                  onClick={() => handlePageChange(totalPages)}
+                                  className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                                >
+                                  {totalPages}
+                                </button>
+                              </>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                            title="Next page"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                          >
+                            Last
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               </div>
@@ -1067,9 +1334,8 @@ const sidebarItems = [
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">                  <div className="flex items-center">
                     <div className="p-2.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg">                      <CategoryIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-2xl font-bold text-white">{categories.length}</h3>
+                    </div>                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{filteredCategories.length}</h3>
                       <p className="text-sm text-gray-300">Total Categories</p>
                     </div>
                   </div>
@@ -1099,18 +1365,31 @@ const sidebarItems = [
                   </div>
                 </div>
               </div>              {/* Categories List */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
-                <div className="flex items-center justify-between mb-6">                  <h3 className="text-lg font-semibold text-white flex items-center">
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-white flex items-center">
                     <CategoryIcon className="w-5 h-5 mr-2 text-purple-400" />
                     All Categories
-                  </h3><button
-                    onClick={() => setIsAddingCategory(true)}
-                    className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
-                  >
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Add New Category
-                  </button>
-                </div>                {/* Add New Category Form */}
+                  </h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      <input 
+                        type="text"
+                        placeholder="Search categories..."
+                        value={categorySearchQuery}
+                        onChange={(e) => handleCategorySearchChange(e.target.value)}
+                        className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 text-sm text-white placeholder-gray-400 backdrop-blur-xl"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setIsAddingCategory(true)}
+                      className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
+                    >
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Add New Category
+                    </button>
+                  </div>
+                </div>{/* Add New Category Form */}
                 {isAddingCategory && (
                   <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
                     <h4 className="text-white font-medium mb-3">Create New Category</h4>
@@ -1154,9 +1433,8 @@ const sidebarItems = [
                       <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={32} height={32} className="rounded-full" />
                     </div>
                     <span className="text-gray-400">Loading categories...</span>
-                  </div>
-                ) : categories.length > 0 ? (                  <div className="space-y-3">
-                    {categories.map((category) => {
+                  </div>                ) : categories.length > 0 ? (                  <div className="space-y-3">
+                    {currentCategories.map((category) => {
                       const postsWithCategory = posts.filter(post => (post as any).tags?.includes(category.name)).length;                      return (
                         <div key={category.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-200">
                           <div className="flex items-center flex-1">
@@ -1208,15 +1486,114 @@ const sidebarItems = [
                           </div>
                         </div>
                       );
-                    })}
-                  </div>                ) : (
-                  <div className="text-center py-8">
+                    })}                  </div>
+                ) : (<div className="text-center py-8">
                     <CategoryIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
                     <p className="text-gray-400">No categories found</p>
                     <p className="text-sm text-gray-500 mt-1">Categories will appear here when you create posts with categories</p>
                   </div>
                 )}
-              </div>            </div>
+
+                {/* Categories Pagination */}
+                {filteredCategories.length > 0 && totalCategoryPages > 1 && (
+                  <div className="px-4 py-4 border-t border-white/20 sm:px-6 mt-6">
+                    {/* Mobile View */}
+                    <div className="flex flex-col space-y-4 sm:hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">
+                          {categoryStartIndex + 1}-{Math.min(categoryEndIndex, filteredCategories.length)} of {filteredCategories.length}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          Page {currentCategoryPage} of {totalCategoryPages}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => handleCategoryPageChange(currentCategoryPage - 1)}
+                          disabled={currentCategoryPage === 1}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <div className="flex items-center px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-xl">
+                          <span className="text-sm font-medium text-white">{currentCategoryPage}</span>
+                        </div>
+                        <button
+                          onClick={() => handleCategoryPageChange(currentCategoryPage + 1)}
+                          disabled={currentCategoryPage === totalCategoryPages}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden sm:flex sm:flex-col sm:space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
+                      <div className="text-sm text-gray-400">
+                        Showing {categoryStartIndex + 1} to {Math.min(categoryEndIndex, filteredCategories.length)} of {filteredCategories.length} categories
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleCategoryPageChange(currentCategoryPage - 1)}
+                          disabled={currentCategoryPage === 1}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: Math.min(5, totalCategoryPages) }, (_, i) => {
+                            let pageNum = i + 1;
+                            if (totalCategoryPages > 5) {
+                              if (currentCategoryPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentCategoryPage >= totalCategoryPages - 2) {
+                                pageNum = totalCategoryPages - 4 + i;
+                              } else {
+                                pageNum = currentCategoryPage - 2 + i;
+                              }
+                            }
+
+                            if (pageNum < 1 || pageNum > totalCategoryPages) return null;
+
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => handleCategoryPageChange(pageNum)}
+                                className={`px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+                                  pageNum === currentCategoryPage
+                                    ? 'text-white bg-purple-500/20 border border-purple-500/30'
+                                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <button
+                          onClick={() => handleCategoryPageChange(currentCategoryPage + 1)}
+                          disabled={currentCategoryPage === totalCategoryPages}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div></div>
           )}
 
           {activeTab === 'tags' && (
@@ -1241,9 +1618,8 @@ const sidebarItems = [
                 <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
                   <div className="flex items-center">                    <div className="p-2.5 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg">
                       <TagIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-2xl font-bold text-white">{tags.length}</h3>
+                    </div>                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-white">{filteredTags.length}</h3>
                       <p className="text-sm text-gray-300">Total Tags</p>
                     </div>
                   </div>
@@ -1275,18 +1651,29 @@ const sidebarItems = [
               </div>
 
               {/* Tags List */}
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">
-                <div className="flex items-center justify-between mb-6">                  <h3 className="text-lg font-semibold text-white flex items-center">
+              <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6">                <div className="flex items-center justify-between mb-6">                  <h3 className="text-lg font-semibold text-white flex items-center">
                     <TagIcon className="w-5 h-5 mr-2 text-green-400" />
                     All Tags
                   </h3>
-                  <button
-                    onClick={() => setIsAddingTag(true)}
-                    className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500/80 to-teal-500/80 text-white rounded-xl hover:from-green-500 hover:to-teal-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
-                  >
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Add New Tag
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      <input 
+                        type="text"
+                        placeholder="Search tags..."
+                        value={tagSearchQuery}
+                        onChange={(e) => handleTagSearchChange(e.target.value)}
+                        className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-400 text-sm text-white placeholder-gray-400 backdrop-blur-xl"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setIsAddingTag(true)}
+                      className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500/80 to-teal-500/80 text-white rounded-xl hover:from-green-500 hover:to-teal-500 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl border border-white/20"
+                    >
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Add New Tag
+                    </button>
+                  </div>
                 </div>
 
                 {/* Add New Tag Form */}
@@ -1354,10 +1741,9 @@ const sidebarItems = [
                       <Image src="/LogoMouhibOtman.svg" alt="Loading..." width={32} height={32} className="rounded-full" />
                     </div>
                     <span className="text-gray-400">Loading tags...</span>
-                  </div>
-                ) : tags.length > 0 ? (
+                  </div>                ) : tags.length > 0 ? (
                   <div className="space-y-3">
-                    {tags.map((tag) => {
+                    {currentTags.map((tag) => {
                       const postsWithTag = posts.filter(post => post.tags?.includes(tag.name)).length;
                       return (
                         <div key={tag.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-200">
@@ -1460,12 +1846,112 @@ const sidebarItems = [
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
-                ) : (                  <div className="text-center py-8">
+                    })}                  </div>
+                ) : (
+                  <div className="text-center py-8">
                     <TagIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
                     <p className="text-gray-400">No tags found</p>
                     <p className="text-sm text-gray-500 mt-1">Tags will appear here when you create posts with tags</p>
+                  </div>
+                )}
+
+                {/* Tags Pagination */}
+                {filteredTags.length > 0 && totalTagPages > 1 && (
+                  <div className="px-4 py-4 border-t border-white/20 sm:px-6 mt-6">
+                    {/* Mobile View */}
+                    <div className="flex flex-col space-y-4 sm:hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">
+                          {tagStartIndex + 1}-{Math.min(tagEndIndex, filteredTags.length)} of {filteredTags.length}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          Page {currentTagPage} of {totalTagPages}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => handleTagPageChange(currentTagPage - 1)}
+                          disabled={currentTagPage === 1}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <div className="flex items-center px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-xl">
+                          <span className="text-sm font-medium text-white">{currentTagPage}</span>
+                        </div>
+                        <button
+                          onClick={() => handleTagPageChange(currentTagPage + 1)}
+                          disabled={currentTagPage === totalTagPages}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden sm:flex sm:flex-col sm:space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
+                      <div className="text-sm text-gray-400">
+                        Showing {tagStartIndex + 1} to {Math.min(tagEndIndex, filteredTags.length)} of {filteredTags.length} tags
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleTagPageChange(currentTagPage - 1)}
+                          disabled={currentTagPage === 1}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: Math.min(5, totalTagPages) }, (_, i) => {
+                            let pageNum = i + 1;
+                            if (totalTagPages > 5) {
+                              if (currentTagPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentTagPage >= totalTagPages - 2) {
+                                pageNum = totalTagPages - 4 + i;
+                              } else {
+                                pageNum = currentTagPage - 2 + i;
+                              }
+                            }
+
+                            if (pageNum < 1 || pageNum > totalTagPages) return null;
+
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => handleTagPageChange(pageNum)}
+                                className={`px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+                                  pageNum === currentTagPage
+                                    ? 'text-white bg-green-500/20 border border-green-500/30'
+                                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <button
+                          onClick={() => handleTagPageChange(currentTagPage + 1)}
+                          disabled={currentTagPage === totalTagPages}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1561,7 +2047,6 @@ const sidebarItems = [
             </div>
           )}
         </main>
-      </div>
-    </div>
+      </div>    </div>
   );
-}
+};

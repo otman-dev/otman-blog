@@ -47,9 +47,37 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 
 export async function getPostById(id: string): Promise<Post | null> {
   try {
+    console.log('getPostById: Looking for post with ID:', id);
     await initializeDatabase();
     const postsCollection = await getPostsCollection();
-    return await postsCollection.findOne({ id });
+    
+    // First try to find by custom id field
+    console.log('getPostById: Trying custom id field...');
+    let post = await postsCollection.findOne({ id });
+    console.log('getPostById: Found by custom id:', post ? 'YES' : 'NO');
+    
+    // If not found, try to find by MongoDB _id field
+    if (!post) {
+      console.log('getPostById: Trying MongoDB _id field...');
+      try {
+        // Check if the id is a valid MongoDB ObjectId
+        const { ObjectId } = await import('mongodb');
+        console.log('getPostById: Is valid ObjectId:', ObjectId.isValid(id));
+        if (ObjectId.isValid(id)) {
+          console.log('getPostById: Trying ObjectId format...');
+          post = await postsCollection.findOne({ _id: new ObjectId(id) } as any);
+          console.log('getPostById: Found by ObjectId:', post ? 'YES' : 'NO');
+        }
+      } catch (error) {
+        console.log('getPostById: ObjectId failed, trying string _id:', id);
+        // Try as string _id in case it's stored as string
+        post = await postsCollection.findOne({ _id: id } as any);
+        console.log('getPostById: Found by string _id:', post ? 'YES' : 'NO');
+      }
+    }
+    
+    console.log('getPostById: Final result:', post ? `Found: ${post.title}` : 'Not found');
+    return post;
   } catch (error) {
     console.error('Error getting post by id:', error);
     return null;
@@ -90,17 +118,51 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
     
     // If publishing for the first time, set publishedAt
     if (updates.published && !updates.publishedAt) {
-      const existingPost = await postsCollection.findOne({ id });
+      // First try to find existing post by custom id
+      let existingPost = await postsCollection.findOne({ id });
+        // If not found, try by MongoDB _id
+      if (!existingPost) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          if (ObjectId.isValid(id)) {
+            existingPost = await postsCollection.findOne({ _id: new ObjectId(id) } as any);
+          }
+        } catch (error) {
+          existingPost = await postsCollection.findOne({ _id: id } as any);
+        }
+      }
+      
       if (existingPost && !existingPost.published) {
         updateData.publishedAt = new Date().toISOString();
       }
     }
     
-    const result = await postsCollection.findOneAndUpdate(
+    // Try to update by custom id first
+    let result = await postsCollection.findOneAndUpdate(
       { id },
       { $set: updateData },
       { returnDocument: 'after' }
     );
+    
+    // If not found, try updating by MongoDB _id
+    if (!result) {
+      try {
+        const { ObjectId } = await import('mongodb');        if (ObjectId.isValid(id)) {
+          result = await postsCollection.findOneAndUpdate(
+            { _id: new ObjectId(id) } as any,
+            { $set: updateData },
+            { returnDocument: 'after' }
+          );
+        }
+      } catch (error) {
+        // Try as string _id
+        result = await postsCollection.findOneAndUpdate(
+          { _id: id } as any,
+          { $set: updateData },
+          { returnDocument: 'after' }
+        );
+      }
+    }
     
     return result || null;
   } catch (error) {
@@ -113,7 +175,22 @@ export async function deletePost(id: string): Promise<boolean> {
   try {
     await initializeDatabase();
     const postsCollection = await getPostsCollection();
-    const result = await postsCollection.deleteOne({ id });
+    
+    // Try to delete by custom id first
+    let result = await postsCollection.deleteOne({ id });
+    
+    // If not found, try deleting by MongoDB _id
+    if (result.deletedCount === 0) {
+      try {
+        const { ObjectId } = await import('mongodb');        if (ObjectId.isValid(id)) {
+          result = await postsCollection.deleteOne({ _id: new ObjectId(id) } as any);
+        }
+      } catch (error) {
+        // Try as string _id
+        result = await postsCollection.deleteOne({ _id: id } as any);
+      }
+    }
+    
     return result.deletedCount > 0;
   } catch (error) {
     console.error('Error deleting post:', error);

@@ -12,15 +12,21 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    console.log('API: Fetching post with ID:', id);
+    console.log('API: ID type:', typeof id, 'Length:', id.length);
+    
     const post = await getPostById(id);
+    console.log('API: Found post:', post ? 'YES' : 'NO');
     
     if (!post) {
+      console.log('API: Post not found for ID:', id);
       return NextResponse.json(
         { error: 'Post not found' },
         { status: 404 }
       );
     }
 
+    console.log('API: Returning post:', post.title);
     return NextResponse.json(post);
   } catch (error) {
     console.error('Error fetching post:', error);
