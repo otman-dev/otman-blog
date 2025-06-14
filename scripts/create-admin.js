@@ -16,7 +16,7 @@ async function createDefaultAdmin() {
     const usersCollection = db.collection('users');
     
     // Check if admin already exists
-    const existingAdmin = await usersCollection.findOne({ role: 'admin' });
+    const existingAdmin = await usersCollection.findOne({ username: 'admin-visitor'});
     if (existingAdmin) {
       console.log('Admin user already exists');
       return;
@@ -25,19 +25,19 @@ async function createDefaultAdmin() {
     // Create default admin user
     const defaultAdmin = {
       id: uuidv4(),
-      username: 'admin',
-      email: 'admin@example.com',
-      passwordHash: await bcrypt.hash('admin123', 10),
+      username: 'admin-visitor',
+      email: 'admin-visitor@otman-blog.com',
+      passwordHash: await bcrypt.hash('visitor123', 10),
       role: 'admin',
-      firstName: 'Admin',
-      lastName: 'User',
+      firstName: 'admin',
+      lastName: 'Visitor',
       createdAt: new Date().toISOString(),
     };
     
     await usersCollection.insertOne(defaultAdmin);
     console.log('Default admin user created successfully');
-    console.log('Username: admin');
-    console.log('Password: admin123');
+    console.log('Username: admin-visitor');
+    console.log('Password: visitor123');
     console.log('⚠️  Please change the password after first login!');
     
   } catch (error) {

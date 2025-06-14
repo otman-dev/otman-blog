@@ -30,6 +30,10 @@ import {
 interface User {
   id: string;
   username: string;
+  email?: string;
+  role?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 interface BlogPost {
@@ -726,15 +730,27 @@ const sidebarItems = [
 
         {/* Enhanced User Section */}
         <div className="p-4 border-t border-white/10 bg-gradient-to-r from-black/20 to-transparent">
-          <div className="flex items-center mb-4 p-3 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
-            <div className="relative">
+          <div className="flex items-center mb-4 p-3 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">            <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-white text-sm font-bold">AD</span>
+                <span className="text-white text-sm font-bold">
+                  {user?.firstName && user?.lastName 
+                    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+                    : user?.username 
+                      ? user.username.substring(0, 2).toUpperCase() 
+                      : 'AD'}
+                </span>
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
             </div>
-            <div className="ml-3 flex-1">              <div className="text-sm font-semibold text-white">Admin User</div>
-              <div className="text-xs text-gray-400">admin@mouhibotman.com</div>
+            <div className="ml-3 flex-1">
+              <div className="text-sm font-semibold text-white">
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.username || 'Admin User'}
+              </div>
+              <div className="text-xs text-gray-400">
+                {user?.email || 'admin@mouhibotman.com'}
+              </div>
             </div>
           </div>
           
